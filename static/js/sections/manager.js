@@ -12,7 +12,7 @@ class Manager {
                 var cards = "";
                 var boards = Object.keys(response['own']);
                 for (var i = 0; i < boards.length; i++) {
-                    var MAC = response['own'][i]['MAC'];
+                    var MAC = response['own'][i]['mac'];
                     var name = response['own'][i]['name'];
                     var autoON = this.getTimeUTC(response['own'][i]['autoON']);
                     var autoOFF = this.getTimeUTC(response['own'][i]['autoOFF']);
@@ -22,7 +22,7 @@ class Manager {
                 if(response['share'].length > 0) {
                     var cards = cards + this.templates.divider.format('Shared');
                     for (var i = 0; i < response['share'].length; i++) {
-                        var MAC = response['share'][i]['MAC'];
+                        var MAC = response['share'][i]['mac'];
                         var name = response['share'][i]['name'];
                         cards = cards + this.templates.shared.format(name, MAC, MAC);
                     }
