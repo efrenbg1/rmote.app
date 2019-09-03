@@ -17,7 +17,7 @@ class Manager {
                     var autoON = this.getTimeUTC(response['own'][i]['autoON']);
                     var autoOFF = this.getTimeUTC(response['own'][i]['autoOFF']);
                     var shareWith = response['own'][i]['shareWith'];
-                    cards = cards + this.templates.card.format(MAC, MAC, MAC, MAC, MAC, name, MAC, MAC, MAC, autoON, MAC, MAC, autoOFF, MAC, MAC, MAC, shareWith, MAC);
+                    cards = cards + this.templates.card.format(MAC, MAC, MAC, MAC, MAC, name, MAC, MAC, MAC, MAC, shareWith, MAC);
                 }
                 if(response['share'].length > 0) {
                     var cards = cards + this.templates.divider.format('Shared');
@@ -93,8 +93,8 @@ class Manager {
 
     save(MAC){
         var name = document.getElementById(MAC + "_name");
-        var autoOFF = this.getMinutesUTC(document.getElementById(MAC + "_off").value);
-        var autoON = this.getMinutesUTC(document.getElementById(MAC + "_on").value);
+        //var autoOFF = this.getMinutesUTC(document.getElementById(MAC + "_off").value);
+        //var autoON = this.getMinutesUTC(document.getElementById(MAC + "_on").value);
         var filter = /^([a-zA-Z0-9]{1,10})$/;
         if (!filter.test(name.value)) {
             tools.show(MAC + "_characters");
@@ -108,11 +108,11 @@ class Manager {
                     tools.snack("Failed!")
                 }
             }.bind(this), {
-                'MAC': tools.encodeSTR(MAC),
+                'MAC': MAC,
                 'Type': "0",
-                'Name': tools.encodeSTR(name.value),
-                'autoOFF': autoOFF,
-                'autoON': autoON
+                'Name': name.value,
+                /*'autoOFF': autoOFF,
+                'autoON': autoON*/
             });
         }
     }
@@ -170,7 +170,7 @@ class Manager {
                     tools.hideDiag();
                     tools.snack("Failed!");
                 }
-            }.bind(this), {"Type":"1", "email": tools.encodeSTR(email), "MAC": tools.encodeSTR(MAC)});
+            }.bind(this), {"Type":"1", "email": tools.encodeSTR(email), "MAC": MAC});
         }
     }
 
@@ -256,14 +256,6 @@ class managerTemplates{
         <div style="margin:0 auto;" class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label is-dirty is-upgraded"  data-upgraded=",MaterialTextfield">
             <input class="mdl-textfield__input" type="text" name="name" value="{}" id="{}_name">
             <label class="mdl-textfield__label" for="{}_name" style="color:#00bcd4;">Change name:</label>
-        </div>
-        <div style="margin:0 auto;" class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label is-dirty is-upgraded"  data-upgraded=",MaterialTextfield">
-            <input class="mdl-textfield__input" type="time" name="on" id="{}_on" value="{}">
-            <label class="mdl-textfield__label" for="{}_on" style="color:#00bcd4;">Hour of activity:</label>
-        </div>
-        <div style="margin:0 auto;" class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label is-dirty is-upgraded"  data-upgraded=",MaterialTextfield">
-            <input class="mdl-textfield__input" type="time" name="off" id="{}_off" value="{}">
-            <label class="mdl-textfield__label" for="{}_off" style="color:#00bcd4;">Hour of sleep:</label>
         </div>
         <div class="mdl-card__actions mdl-card--border">
         <center>
