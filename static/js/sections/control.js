@@ -32,17 +32,18 @@ class Control{
         tools.req('/control/list', function(status, response){
             if (status === 200) {
                 var cards = "";
-                console.log(response['own'][0]);
                 for(var i=0; i < response['own'].length; i++){
                     var MAC = response['own'][i]['mac'];
                     var name = response['own'][i]['name'];
                     cards = cards + this.templates.card.format(MAC, MAC, MAC, MAC, name, MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC);
                 }
-                var cards = cards + this.templates.divider.format('Shared');
-                for (var i = 0; i < response['share'].length; i++) {
-                    var MAC = response['share'][i]['mac'];
-                    var name = response['share'][i]['name'];
-                    cards = cards + this.templates.card.format(MAC, MAC, MAC, MAC, name, MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC);
+                if(response['share'].length > 0) {
+                    var cards = cards + this.templates.divider.format('Shared');
+                    for (var i = 0; i < response['share'].length; i++) {
+                        var MAC = response['share'][i]['mac'];
+                        var name = response['share'][i]['name'];
+                        cards = cards + this.templates.card.format(MAC, MAC, MAC, MAC, name, MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC);
+                    }
                 }
                 document.getElementById("grid").innerHTML = cards;
                 tools.updateMDL();

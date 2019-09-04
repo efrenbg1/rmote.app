@@ -11,8 +11,9 @@ class Session{
         tools.hideDiag();
         tools.req('/login', function(status, response){
             if (status === 200) {
-                tools.setCookie("Username",response['Username'],10);
+                tools.setCookie("Username", response['Username'], 10);
                 tools.setCookie("Session", response['Cookie'], 10);
+                document.getElementById("username").innerText = tools.getCookie("Username");
                 section.reconstruct();
             } else {
                 tools.hideDiag();

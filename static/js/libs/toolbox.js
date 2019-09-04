@@ -60,6 +60,40 @@ class Toolbox {
         this.uReq.send();
     }
 
+
+    getMinutesUTC(time){
+        var filter = /^(0[0-9]|1[0-9]|2[0-3]|[0-9]):[0-5][0-9]$/;
+        try{
+            if(!filter.test(time)){
+                return null;
+            }
+            var offset = new Date().getTimezoneOffset();
+            var off = time.split(':');
+            var minutes = (+off[0]) * 60 + (+off[1]);
+            return minutes+offset;
+        } catch(error){
+            console.log(error);
+            return null;
+        }
+    }
+
+    getTimeUTC(time) {
+        if(time === "null"){
+            return "";
+        }
+        var offset = new Date().getTimezoneOffset();
+        time = parseInt(time) - offset;
+        var hours = Math.floor(time/60);
+        if(hours < 10){
+            hours = "0" + hours.toString()
+        }
+        var minutes = time%60;
+        if(minutes < 10){
+            minutes = "0" + minutes.toString()
+        }
+        return "{}:{}".format(hours, minutes);
+    }
+
     select(id) {
         var all = document.getElementsByClassName('active');
         while (all.length > 0) {

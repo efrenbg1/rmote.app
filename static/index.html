@@ -19,13 +19,7 @@
       <header class="demo-header mdl-layout__header mdl-color--grey-100 mdl-color-text--grey-600">
         <div class="mdl-layout__header-row"> <span id="title" class="mdl-layout-title">Control center</span>
           <div class="mdl-layout-spacer"></div>
-          <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon" id="hdrbtn"> <i class="material-icons">more_vert</i> </button>
-          <ul class="mdl-menu mdl-js-menu mdl-js-ripple-effect mdl-menu--bottom-right"
-
-            for="hdrbtn">
-            <li class="mdl-menu__item" onclick="session.logOut()">Logout</li>
-            <li class="mdl-menu__item" onclick="location.href='http://kck.st/2Z84RTn';">Kickstarter</li>
-          </ul>
+          <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon" onclick="session.logOut()" name="LogOut"> <i class="material-icons">exit_to_app</i> </button>
         </div>
         </header>
       <div class="demo-drawer mdl-layout__drawer mdl-color--blue-grey-900 mdl-color-text--blue-grey-50">
@@ -42,7 +36,7 @@
           <a class="mdl-navigation__link" id="settings" onclick="section.select('settings')">
             <i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">settings</i>Settings</a>
           <div class="mdl-layout-spacer"></div>
-          <a class="mdl-navigation__link" href=""><i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">help_outline</i>About<span class="visuallyhidden">Help</span></a>
+          <a class="mdl-navigation__link" onclick="location.href='http://kck.st/2Z84RTn';"><i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">help_outline</i>About<span class="visuallyhidden">Help</span></a>
         </nav>
       </div>
       <main class="mdl-layout__content mdl-color--grey-100">

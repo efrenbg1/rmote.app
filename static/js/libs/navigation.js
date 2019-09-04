@@ -29,6 +29,7 @@ class Navigation{
 
     reconstruct() {
         clearInterval(tools.interval);
+        document.getElementById("username").innerText = tools.getCookie("Username");
         if (this.section === "control") {
             active = new Control();
         } else if (this.section === "manager") {

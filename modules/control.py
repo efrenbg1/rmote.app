@@ -19,7 +19,8 @@ def controlList():
                     response['share'].append({'mac': secondary[i][0], 'name': secondary[i][1]})
             return str(json.dumps(response))
         except Exception as e:
-            pass
+            print(e)
+            return "400 (Bad request)", 400
     return "401 (Unauthorized)", 401
 
 
@@ -32,7 +33,9 @@ def controlUpdate():
             main = ddbb.query("(SELECT mac FROM acls WHERE user=(SELECT id FROM user WHERE username=%s)) UNION (SELECT acls.mac FROM acls, share WHERE share.user=(SELECT id FROM user WHERE username=%s) AND share.mac=acls.mac)", user, user)
             response = {}
             for i in range(len(main)):
-                response[main[i][0]] = {'Status': ddbb.status.get(main[i][0]), 'Action': ddbb.actions.get(main[i][0])}
+                status = ddbb.topics.hget(main[i][0], "0")
+                action = ddbb.topics.hget(main[i][0], "1")
+                response[main[i][0]] = {'Status': status, 'Action': action}
             return str(json.dumps(response))
         except Exception as e:
             print(e)
@@ -48,7 +51,7 @@ def controlAction():
             mac = request.headers.get('mac')
             payload = request.headers.get('payload')
             if ddbb.inAcls(user, mac) and len(payload) == 1:
-                ddbb.actions.set(mac, payload)
+                ddbb.topics.hset(mac, "1", payload)
                 return str(json.dumps({'Done': '1'}))
         except Exception as e:
             print(e)

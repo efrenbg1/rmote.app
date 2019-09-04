@@ -2,7 +2,7 @@ from flask import Flask, redirect, render_template
 import sys, os, checksumdir
 sys.path.insert(0, './libs')
 from libs import core, ddbb, password, sessions
-from modules import modules, control, manager
+from modules import modules, control, manager, settings
 
 app = Flask(__name__, template_folder='static/')
 app.register_blueprint(core.hub)

@@ -2,14 +2,20 @@ import pymysql as mysql
 from DBUtils.PersistentDB import PersistentDB
 from flask import Flask, g, request
 import redis
+from libs import ddbb, password
 
 sessions = redis.Redis(host='127.0.0.1', port=6379, db=0, decode_responses=True)
 users = redis.Redis(host='127.0.0.1', port=6379, db=1, decode_responses=True)
 acls = redis.Redis(host='127.0.0.1', port=6379, db=2, decode_responses=True)
-status = redis.Redis(host='127.0.0.1', port=6379, db=3, decode_responses=True)
-actions = redis.Redis(host='127.0.0.1', port=6379, db=4, decode_responses=True)
+topics = redis.Redis(host='127.0.0.1', port=6379, db=3, decode_responses=True)
 
 app = Flask(__name__)
+
+def checkPW(user, pw):
+    hash = ddbb.query("SELECT pw FROM user WHERE username=%s LIMIT 1", user)[0]
+    if password.check_hash(pw, hash[0]):
+        return True
+    return False
 
 def inAcls(user, mac):
     macs = acls.smembers(user)
@@ -25,7 +31,7 @@ def inAcls(user, mac):
         return True
     return False
 
-#Function to connect the application with the database
+
 def connect_db():
     return PersistentDB(creator=mysql, user='web', password='SuperPowers4All', host='127.0.0.1', database='rmote')
 
@@ -35,7 +41,7 @@ def get_db():
         app.db = connect_db()
     return app.db.connection()
 
-#Function to make a query to the database.
+
 def query(sql, *param):
     try:
         cursor = get_db().cursor()
@@ -62,7 +68,6 @@ def querymany(sql, *param):
         pass
     return None
 
-# Function to insert the database in the application.
 def insert(sql, *param):
     try:
         cursor = get_db().cursor()

@@ -16,8 +16,8 @@ def managerList():
                     response['own'].append({'mac': main[i][0], 'name': main[i][1], 'autoON': main[i][2], 'autoOFF': main[i][3], 'shareWith': main[i][4]})
             if secondary != None:
                 for i in range(len(secondary)):
-                    response['share'].append({'mac': secondary[i][0], 'name': secondary[i][1], 'shareBy': secondary[i][2]})
-            print(response)
+                    if secondary[i][0] != None:
+                        response['share'].append({'mac': secondary[i][0], 'name': secondary[i][1], 'shareBy': secondary[i][2]})
             return str(json.dumps(response))
         except Exception as e:
             pass
