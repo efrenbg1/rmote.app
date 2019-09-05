@@ -16,7 +16,6 @@ class Session{
                 document.getElementById("username").innerText = tools.getCookie("Username");
                 section.reconstruct();
             } else {
-                tools.hideDiag();
                 this.showLogIn("Wrong credentials (" + status + ")");
             }
         }.bind(this), {'Username': tools.encodeSTR(user),'Password': tools.encodeSTR(pw)});
@@ -28,7 +27,7 @@ class Session{
             document.cookie = "Username=;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
             document.cookie = "Session=;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
             if (status === 200) {
-                this.showLogIn();
+                this.showLogIn("Session expired");
             } else {
                 tools.snack("Something went wrong");
             }

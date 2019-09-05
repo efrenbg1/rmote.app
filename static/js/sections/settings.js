@@ -7,7 +7,7 @@ class Settings{
     mail(){
         showDialog({
             title: 'Change email:',
-            text: `<center><form action="#" autocomplete="off">
+            text: `<center><form action="javascript:" autocomplete="off">
             <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
             <div class="popup">
             <span class="popuptext" id="valid">Please insert a valid email address</span></div>
@@ -46,12 +46,12 @@ class Settings{
         showDialog({
             title: 'Change password:',
             text: `<center>
-  <form action="#">
+  <form action="javascript:" autocomplete="off">
     <div class="popup mdl-textfield mdl-js-textfield">
       <div class="popup">
         <span class="popuptext" id="popup1">⮚ 8-20 characters<br>⮚ Contain only and at least one: uppercase, lowercase and number</span>
       </div>
-      <input class="mdl-textfield__input" type="password" id="input-1" onkeyup="active.checkPass()">
+      <input class="mdl-textfield__input" type="password" id="input-1" onkeyup="active.checkPass()" autocomplete="new-password">
       <label id="input-1-text" class="mdl-textfield__label" for="sample1">Current password</label>
     </div>
     <div class="mdl-textfield mdl-js-textfield">
@@ -60,13 +60,13 @@ class Settings{
       </div>
       <div class="popup">
         <span class="popuptext" id="popup2_old">Can´t be the same as your older password</span></div>
-      <input class="mdl-textfield__input" type="password" id="input-2" onkeyup="active.checkPass()">
+      <input class="mdl-textfield__input" type="password" id="input-2" onkeyup="active.checkPass()" autocomplete="new-password">
       <label id="input-2-text" class="mdl-textfield__label" for="sample1">New password</label>
     </div>
     <div class="mdl-textfield mdl-js-textfield">
       <div class="popup">
         <span class="popuptext" id="popup3">Passwords don´t match</span></div>
-      <input class="mdl-textfield__input" type="password" id="input-3" onkeyup="active.checkPass()">
+      <input class="mdl-textfield__input" type="password" id="input-3" onkeyup="active.checkPass()" autocomplete="new-password">
       <label id="input-3-text" class="mdl-textfield__label" for="sample1">Repeat</label>
     </div>
   </form>
@@ -90,7 +90,7 @@ class Settings{
         showDialog({
             title: 'Please confirm data to delete the account:',
             text: `<center>
-  <form action="#" autocomplete="off">
+  <form action="javascript:" autocomplete="off">
     <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
       <div class="popup">
         <span class="popuptext" id="popup2">Wrong email address</span></div>
@@ -152,11 +152,15 @@ class Settings{
 
     destroyAccount() {
         if (this.checkDestroy()) {
-            var input_1 = document.getElementById("input-1").value;
             var input_2 = document.getElementById("input-2").value;
             tools.req('/settings/destroy', function (status, response) {
-
-            }.bind(this), {});
+                if (status === 200) {
+                    alert("Account succesfully deleted");
+                    session.logOut();
+                } else {
+                    tools.snack("Something went wrong")
+                }
+            }.bind(this), {'pw': tools.encodeSTR(input_2)});
         }
     }
 
@@ -254,7 +258,7 @@ class Settings{
         var filter_email = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
         var filter_pw = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])([a-zA-Z0-9]{8,20})$/;
         if(tools.getCookie('Username') == ""){
-            session.logIn();
+            session.logIn("Session expired");
         }
         if(email.value) {
             console.log(email.value);

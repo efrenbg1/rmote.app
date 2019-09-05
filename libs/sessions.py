@@ -21,7 +21,7 @@ def login():
                 return str(json.dumps(response))
     except Exception as e:
         pass
-    return "401 (Unauthorized)", 401
+    return "403 (Forbidden)", 403
 
 #Function to delete the sessions of the user to logout
 @core.hub.route('/logout')

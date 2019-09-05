@@ -106,7 +106,7 @@ class Manager {
         if (email === undefined) {
             showDialog({
                 title: 'Insert e-mail address of receiver (blank to disable it):',
-                text: `<center><form action="#">
+                text: `<center><form action="javascript:">
             <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
             <div class="popup">
             <span class="popuptext" id="valid">Please insert a valid email address or leave it blank to disable it</span></div>
