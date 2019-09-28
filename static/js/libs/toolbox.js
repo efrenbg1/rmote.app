@@ -1,15 +1,4 @@
 class Toolbox {
-    download(url, headers){
-        url = url + "?rand=" + (new Date).getTime();
-        if(headers !== undefined){
-            let keys = Object.keys(headers);
-            for(let i = 0; i<keys.length; i++){
-                url = url + "&" + encodeURI(keys[i]) + "=" + encodeURI(headers[keys[i]]);
-            }
-        }
-        document.getElementById('download').contentWindow.location.href = url;
-    }
-
     /**
      * Makes a request using the parameters introduced in the function
      * @param (string) url The url you will make the request to
@@ -121,8 +110,8 @@ class Toolbox {
         <p></p></div>`.format(msg),
             cancelable: true,
             onHidden: function() {
-                if(getCookie("Username") == null && getCookie("Session") == null){
-                    showLogIn();
+                if(tools.getCookie("Username") == null && tools.getCookie("Session") == null){
+                    session.showLogIn('Session expired', '');
                 }
             },
         });

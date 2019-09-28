@@ -27,7 +27,7 @@ class Session{
             document.cookie = "Username=;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
             document.cookie = "Session=;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
             if (status === 200) {
-                this.showLogIn("Session expired");
+                this.showLogIn("Session closed");
             } else {
                 tools.snack("Something went wrong");
             }
@@ -69,5 +69,5 @@ class sessionTemplates{
     <input type="text" placeholder="username" id="user"/>
     <input type="password" placeholder="password" id="pw"/>
     <button onclick="session.logIn();" type="button">login</button>
-    <p class="message">Not registered? <a>Create an account</a></p></form>`;
+    <p class="message">Not registered? <a href="/register.html">Create an account</a></p></form>`;
 }

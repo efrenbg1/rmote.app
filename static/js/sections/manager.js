@@ -16,9 +16,10 @@ class Manager {
                     /*var autoON = this.getTimeUTC(response['own'][i]['autoON']);
                     var autoOFF = this.getTimeUTC(response['own'][i]['autoOFF']);*/
                     var shareWith = response['own'][i]['shareWith'];
-                    cards = cards + this.templates.card.format(MAC, MAC, MAC, MAC, MAC, name, MAC, MAC, MAC, MAC, shareWith, MAC);
+                    var cluster = (response['own'][i]['cluster'] == "1") ? 'checked' : '';
+                    cards = cards + this.templates.card.format(MAC, MAC, MAC, MAC, MAC, name, MAC, MAC, MAC, MAC, cluster, MAC, MAC, shareWith, MAC);
                 }
-                if(response['share'].length > 0) {
+                if (response['share'].length > 0) {
                     var cards = cards + this.templates.divider.format('Shared');
                     for (var i = 0; i < response['share'].length; i++) {
                         var MAC = response['share'][i]['mac'];
@@ -27,6 +28,7 @@ class Manager {
                     }
                 }
                 document.getElementById("grid").innerHTML = cards + this.templates.divider.format('New board') + this.templates.newCard;
+                componentHandler.upgradeAllRegistered();
                 try{
                     tools.hideDiag();
                 } catch (e) {}
@@ -63,6 +65,7 @@ class Manager {
         var name = document.getElementById(MAC + "_name");
         //var autoOFF = this.getMinutesUTC(document.getElementById(MAC + "_off").value);
         //var autoON = this.getMinutesUTC(document.getElementById(MAC + "_on").value);
+        var cluster = (document.getElementById(MAC + "_cluster").checked) ? '1': '0';
         var filter = /^([a-zA-Z0-9]{1,10})$/;
         if (!filter.test(name.value)) {
             tools.show(MAC + "_characters");
@@ -79,6 +82,7 @@ class Manager {
                 'mac': MAC,
                 'type': "0",
                 'name': name.value,
+                'cluster': cluster
                 /*'autoOFF': autoOFF,
                 'autoON': autoON*/
             });
@@ -182,7 +186,7 @@ class Manager {
                     tools.hideDiag();
                     tools.snack("Failed!");
                 }
-            }.bind(this),{'mac': tools.encodeSTR(MAC), 'type': "9"});
+            }.bind(this),{'mac': MAC, 'type': "9"});
         } else {
             showDialog({
                 title: '<h3 class="mdl-dialog__title" style="width:100%">Are you sure?</h3>',
@@ -227,6 +231,12 @@ class managerTemplates{
       <input class="mdl-textfield__input" type="text" name="name" value="{}" id="{}_name">
       <label class="mdl-textfield__label" for="{}_name" style="color:#00bcd4;">Change name:</label>
     </div>
+    <div style="margin: 0 auto; margin-bottom: 15px;">
+<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="{}_cluster" style="display: none;">
+  <input type="checkbox" id="{}_cluster" class="mdl-switch__input" {}>
+  <span class="mdl-switch__label">Cluster (combine boards)</span>
+</label>
+</div>
     <div class="mdl-card__actions mdl-card--border">
       <center>
         <button href="#" class="mdl-button mdl-js-button mdl-js-ripple-effect" onclick="active.save('{}')"

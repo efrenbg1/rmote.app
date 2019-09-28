@@ -32,19 +32,26 @@ class Control{
         tools.req('/control/list', function(status, response){
             if (status === 200) {
                 var cards = "";
+                //this.cluster = [];
                 for(var i=0; i < response['own'].length; i++){
                     var MAC = response['own'][i]['mac'];
                     var name = response['own'][i]['name'];
-                    cards = cards + this.templates.card.format(MAC, MAC, MAC, MAC, name, MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC);
+                    //if (response['own'][i]['cluster'] == "1") this.cluster.push(MAC);
+                    cards = cards + this.templates.card.format(MAC, MAC, MAC, MAC, name, MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC);
                 }
                 if(response['share'].length > 0) {
                     var cards = cards + this.templates.divider.format('Shared');
                     for (var i = 0; i < response['share'].length; i++) {
                         var MAC = response['share'][i]['mac'];
                         var name = response['share'][i]['name'];
-                        cards = cards + this.templates.card.format(MAC, MAC, MAC, MAC, name, MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC);
+                        cards = cards + this.templates.card.format(MAC, MAC, MAC, MAC, name, MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC);
                     }
                 }
+                /*if(this.cluster.length > 0){
+                    var MAC = 'cluster';
+                    var name = 'Combined boards';
+                    cards = this.templates.card.format(MAC, MAC, MAC, MAC, name, MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC) + cards;
+                }*/
                 document.getElementById("grid").innerHTML = cards;
                 tools.updateMDL();
                 this.update();
@@ -94,7 +101,9 @@ class Control{
             tools.hide(boards[i] + '/done');
             tools.hide(boards[i] + '/waiting');
             tools.hide(boards[i] + '/turning');
-            tools.show(boards[i] + boardAction[response[boards[i]]['Action']]);
+            if(response[boards[i]]['Status'] != '9' && response[boards[i]]['Status'] != null) {
+                tools.show(boards[i] + boardAction[response[boards[i]]['Action']]);
+            }
         }
     }
 }
@@ -160,7 +169,6 @@ class controlTemplates {
             <button onclick="active.action('{}','0')" class="mdl-button mdl-js-button mdl-button--primary">
                 <i class="material-icons">power_settings_new</i></button>
 
-
             <button style="right: 5px; position: absolute; display: inline-flex; vertical-align: middle;" id="menu_{}"
                     class="mdl-button mdl-js-button mdl-button--icon">
                 <i class="material-icons">more_vert</i>
@@ -168,6 +176,22 @@ class controlTemplates {
 
             <ul class="mdl-menu mdl-menu--top-right mdl-js-menu mdl-js-ripple-effect"
                 data-mdl-for="menu_{}">
+                <li class="mdl-menu__item mdl-js-ripple-effect" onclick="showDialog({
+                title: 'Are you sure?',
+                text: 'The board needs an active Internet connection and uninterrupted power',
+                positive: {
+                title: 'Yes',
+                onClick: function (e) {
+                active.action('{}', '8');
+                }
+                },
+                negative: {
+                title: 'No'
+                }
+                });" tabindex="-1"
+                    data-upgraded=",MaterialRipple"><i class="material-icons"
+                                                       style="display: inline-flex; vertical-align: middle;">system_update</i>
+                    Update firmware<span class="mdl-menu__item-ripple-container"><span class="mdl-ripple"></span></span></li>
                 <li class="mdl-menu__item mdl-js-ripple-effect" onclick="active.action('{}','9')" tabindex="-1"
                     data-upgraded=",MaterialRipple"><i class="material-icons"
                                                        style="display: inline-flex; vertical-align: middle;">av_timer</i>
@@ -187,11 +211,6 @@ class controlTemplates {
                 });" tabindex="-1" data-upgraded=",MaterialRipple"><i class="material-icons"
                                                                       style="display: inline-flex; vertical-align: middle;">stop</i>
                     Force off<span class="mdl-menu__item-ripple-container"><span class="mdl-ripple"></span></span></li>
-                <li class="mdl-menu__item mdl-js-ripple-effect" onclick="active.action('{}','6')" tabindex="-1"
-                    data-upgraded=",MaterialRipple"><i class="material-icons"
-                                                       style="display: inline-flex; vertical-align: middle;">power_off</i>
-                    Cancel action<span class="mdl-menu__item-ripple-container"><span class="mdl-ripple"></span></span>
-                </li>
             </ul>
         </div>
     </div>

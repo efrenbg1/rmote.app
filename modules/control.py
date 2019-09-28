@@ -8,12 +8,12 @@ def controlList():
     if sessions.check(request.cookies):
         try:
             user = request.cookies.get('Username')
-            main = ddbb.query("SELECT acls.mac, acls.name FROM acls, user WHERE acls.user=user.id AND user.username=%s ORDER BY name", user)
+            main = ddbb.query("SELECT acls.mac, acls.name, acls.cluster FROM acls, user WHERE acls.user=user.id AND user.username=%s ORDER BY name", user)
             secondary = ddbb.query("SELECT acls.mac, acls.name FROM acls, share, user WHERE share.user=user.id AND share.mac=acls.mac AND user.username=%s", user)
             response = {'own': [], 'share': []}
             if main != None:
                 for i in range(len(main)):
-                    response['own'].append({'mac': main[i][0], 'name': main[i][1]})
+                    response['own'].append({'mac': main[i][0], 'name': main[i][1], 'cluster': main[i][2]})
             if secondary != None:
                 for i in range(len(secondary)):
                     response['share'].append({'mac': secondary[i][0], 'name': secondary[i][1]})

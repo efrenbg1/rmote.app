@@ -1,8 +1,10 @@
 import pymysql as mysql
 from DBUtils.PersistentDB import PersistentDB
 from flask import Flask, g, request
-import redis
+import redis, warnings
 from libs import ddbb, password
+
+warnings.filterwarnings('ignore', category=mysql.Warning)
 
 sessions = redis.Redis(host='127.0.0.1', port=6379, db=0, decode_responses=True)
 users = redis.Redis(host='127.0.0.1', port=6379, db=1, decode_responses=True)
@@ -33,7 +35,7 @@ def inAcls(user, mac):
 
 
 def connect_db():
-    return PersistentDB(creator=mysql, user='web', password='SuperPowers4All', host='127.0.0.1', database='rmote')
+    return PersistentDB(creator=mysql, user='web', password='****', host='basa.10x.es', database='rmote')
 
 # Function to get the database
 def get_db():
