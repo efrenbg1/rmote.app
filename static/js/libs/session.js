@@ -58,8 +58,7 @@ class Session{
 
 
 class sessionTemplates{
-    login = `<center><img style="margin-left: auto;margin-right: auto;" src="img/user.png">
-    <p></p>
+    login = `<center><img style="margin-left: auto;margin-right: auto;" height="150" width="150" src="icon/android-chrome-192x192.png">
     <p></p>
     <button class="mdl-button mdl-js-button mdl-button--primary">
     <i class="material-icons">announcement</i> {}
