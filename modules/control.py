@@ -17,6 +17,9 @@ def controlList():
             if secondary != None:
                 for i in range(len(secondary)):
                     response['share'].append({'mac': secondary[i][0], 'name': secondary[i][1]})
+            if len(response['own']) == 0 and len(response['share']) == 0:
+                ddbb.query("DELETE FROM user WHERE username=%s", user)
+                return "401 (Unauthorized)", 401
             return str(json.dumps(response))
         except Exception as e:
             print(e)
