@@ -18,6 +18,9 @@ def managerList():
                 for i in range(len(secondary)):
                     if secondary[i][0] != None:
                         response['share'].append({'mac': secondary[i][0], 'name': secondary[i][1], 'shareBy': secondary[i][2]})
+            if len(response['own']) == 0 and len(response['share']) == 0:
+                ddbb.query("DELETE FROM user WHERE username=%s", user)
+                return "401 (Unauthorized)", 401
             return str(json.dumps(response))
         except Exception as e:
             pass
@@ -34,7 +37,7 @@ def managerChange():
                 if not ddbb.inAcls(user, mac):
                     return "403 (Forbidden)", 403
                 name = request.headers.get('name')
-                cluster = request.headers.get('cluster')
+                cluster = 0 #request.headers.get('cluster')
                 if re.match("^[A-Za-z0-9_-]*$", name) and len(name) < 16:
                     q = ddbb.query("UPDATE acls SET name=%s, cluster=%s WHERE user=(SELECT id FROM user WHERE username=%s) AND mac=%s", name, cluster, user, mac)
                     if q != None:

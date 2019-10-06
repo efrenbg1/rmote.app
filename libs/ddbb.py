@@ -15,7 +15,7 @@ app = Flask(__name__)
 
 def checkPW(user, pw):
     hash = ddbb.query("SELECT pw FROM user WHERE username=%s LIMIT 1", user)[0]
-    if password.check_hash(pw, hash[0]):
+    if password.checkHash(hash[0], pw):
         return True
     return False
 

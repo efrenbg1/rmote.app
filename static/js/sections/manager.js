@@ -7,9 +7,11 @@ class Manager {
     getCards() {
         tools.showLoading("boards manager");
         tools.req('/manager/list', function (status, response) {
+            tools.hideDiag();
             if (status === 200) {
                 var cards = "";
                 var boards = Object.keys(response['own']);
+                this.total = boards.length;
                 for (var i = 0; i < boards.length; i++) {
                     var MAC = response['own'][i]['mac'];
                     var name = response['own'][i]['name'];
@@ -20,6 +22,7 @@ class Manager {
                     cards = cards + this.templates.card.format(MAC, MAC, MAC, MAC, MAC, name, MAC, MAC, MAC, MAC, cluster, MAC, MAC, shareWith, MAC);
                 }
                 if (response['share'].length > 0) {
+                    this.total = this.total + response['share'].length;
                     var cards = cards + this.templates.divider.format('Shared');
                     for (var i = 0; i < response['share'].length; i++) {
                         var MAC = response['share'][i]['mac'];
@@ -29,9 +32,6 @@ class Manager {
                 }
                 document.getElementById("grid").innerHTML = cards + this.templates.divider.format('New board') + this.templates.newCard;
                 componentHandler.upgradeAllRegistered();
-                try{
-                    tools.hideDiag();
-                } catch (e) {}
             } else {
                 session.logOut();
             }
@@ -148,60 +148,64 @@ class Manager {
     removeShare(MAC, force){
         if(force) {
             tools.req('/manager/change', function (status, response){
+                tools.hideDiag();
                 if(status === 200){
                     tools.snack("Done");
                     this.getCards();
                 } else {
-                    tools.hideDiag();
                     tools.snack("Failed!");
                 }
-            }.bind(this), {"type":"1", "email": "", "mac": MAC});
+            }.bind(this), {"type": "1", "email": "", "mac": MAC});
         } else {
-            showDialog({
-                title: `<h3 class="mdl-dialog__title" style="width:100%">Are you sure?</h3>`,
-                text: `<br><center>Shared boards can't be added by user</center><br>`,
-                negative: {
-                    title: '<h style="color:green;" disabled>No</h>',
-                },
-                positive: {
-                    title: '<h style="color:red;" disabled>Yes</h>',
-                    onClick: function () {
-                        active.removeShare(MAC, true);
-                    }
-                },
-                cancelable: true,
-                contentStyle: {'max-width': '300px'},
-            });
+            if(this.total !== 1 || confirm("Removing the last board will delete this account! Are you sure?")) {
+                showDialog({
+                    title: `<h3 class="mdl-dialog__title" style="width:100%">Are you sure?</h3>`,
+                    text: `<br><center>Shared boards can't be added by user</center><br>`,
+                    negative: {
+                        title: '<h style="color:green;" disabled>No</h>',
+                    },
+                    positive: {
+                        title: '<h style="color:red;" disabled>Yes</h>',
+                        onClick: function () {
+                            active.removeShare(MAC, true);
+                        }
+                    },
+                    cancelable: true,
+                    contentStyle: {'max-width': '300px'},
+                });
+            }
         }
     }
 
-    remove(MAC, force){
+    remove(MAC, force) {
         if(force) {
             tools.req('/manager/change', function(status, response){
+                tools.hideDiag();
                 if(status === 200){
                     tools.snack("Done");
                     this.getCards();
                 } else {
-                    tools.hideDiag();
                     tools.snack("Failed!");
                 }
             }.bind(this),{'mac': MAC, 'type': "9"});
         } else {
-            showDialog({
-                title: '<h3 class="mdl-dialog__title" style="width:100%">Are you sure?</h3>',
-                text: '<br>',
-                negative: {
-                    title: '<h style="color:green;" disabled>No</h>',
-                },
-                positive: {
-                    title: '<h style="color:red;" disabled>Yes</h>',
-                    onClick: function () {
-                        active.remove(MAC, true);
-                    }
-                },
-                cancelable: true,
-                contentStyle: {'max-width': '300px'},
-            });
+            if(this.total !== 1 || confirm("Removing the last board will delete this account! Are you sure?")) {
+                showDialog({
+                    title: '<h3 class="mdl-dialog__title" style="width:100%">Are you sure?</h3>',
+                    text: '<br>',
+                    negative: {
+                        title: '<h style="color:green;" disabled>No</h>',
+                    },
+                    positive: {
+                        title: '<h style="color:red;" disabled>Yes</h>',
+                        onClick: function () {
+                            active.remove(MAC, true);
+                        }
+                    },
+                    cancelable: true,
+                    contentStyle: {'max-width': '300px'},
+                });
+            }
         }
     }
 }

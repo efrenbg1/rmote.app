@@ -18,7 +18,7 @@ def register():
                     q = ddbb.query('SELECT user FROM acls WHERE mac=%s', mac)
                     if len(q) == 0:
                         insert = ddbb.insert('INSERT INTO user (username, pw) VALUES (%s, %s)', user,
-                                             password.make_hash(pw))
+                                             password.createHash(pw))
                         if insert != None:
                             q = ddbb.insert("INSERT INTO acls (mac, user, name, cluster) VALUES (%s, %s, 'Unnamed', 0)",
                                             mac, insert)
@@ -27,7 +27,7 @@ def register():
                 elif q[0][1] == "": #pending for registration
                     q = ddbb.query('SELECT mac FROM share WHERE user=%s', q[0][0])
                     if q[0][0] == mac: #user pending and its mac match
-                        update = ddbb.query('UPDATE user SET pw=%s WHERE username=%s', password.make_hash(pw), user)
+                        update = ddbb.query('UPDATE user SET pw=%s WHERE username=%s', password.createHash(pw), user)
                         if update != None:
                             return str(json.dumps({'Done': '1'}))
     except Exception as e:

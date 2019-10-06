@@ -32,7 +32,7 @@ def settingsPassword():
             new = base64.b64decode(request.headers.get("new")).decode('utf-8')
             if ddbb.checkPW(user, pw):
                 if re.match("^[A-Za-z0-9_-]*$", new) and 7 < len(new) < 21:
-                    q = ddbb.query("UPDATE user SET pw=%s WHERE username=%s", password.make_hash(new), user)
+                    q = ddbb.query("UPDATE user SET pw=%s WHERE username=%s", password.createHash(new), user)
                     if q != None:
                         ddbb.users.delete(user)
                         return str(json.dumps({'Done': '1'}))

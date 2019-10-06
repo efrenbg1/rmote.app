@@ -10,7 +10,8 @@ class Session{
         var pw = document.getElementById("pw").value;
         tools.hideDiag();
         tools.showLoading('profile');
-        tools.req('/login', function(status, response){
+        tools.req('/login', function (status, response) {
+            tools.hideDiag();
             if (status === 200) {
                 tools.setCookie("Username", response['Username'], 10);
                 tools.setCookie("Session", response['Cookie'], 10);
@@ -34,7 +35,6 @@ class Session{
 
     showLogIn(msg){
         clearInterval(tools.interval);
-        console.log(document.getElementById('orrsDiag'));
         if(document.getElementById('orrsDiag') === null) {
             document.getElementById("obfuscator").classList.add('is-visible');
             showDialog({
