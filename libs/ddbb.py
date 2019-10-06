@@ -35,7 +35,7 @@ def inAcls(user, mac):
 
 
 def connect_db():
-    return PersistentDB(creator=mysql, user='web', password='Edilizia5', host='basa.10x.es', database='rmote')
+    return PersistentDB(creator=mysql, user='web', password='****', host='basa.10x.es', database='rmote')
 
 # Function to get the database
 def get_db():

@@ -31,7 +31,7 @@ def managerList():
 def managerChange():
     if sessions.check(request.cookies):
             user = request.cookies.get('Username')
-            mac = request.headers.get('mac')
+            mac = request.headers.get('mac').upper()
             type = request.headers.get('type')
             if type == "0": #change name or cluster
                 if not ddbb.inAcls(user, mac):

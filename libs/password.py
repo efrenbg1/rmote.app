@@ -6,6 +6,7 @@ def createHash(string):
 
 
 def checkHash(hash, string):
+    print(hash[64:].encode() + string.encode())
     if hashlib.sha256(hash[64:].encode() + string.encode()).hexdigest() == hash[0:64]:
         return True
     return False
