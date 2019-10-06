@@ -1,7 +1,3 @@
-window.onhashchange = function(){
-    section.browserBack();
-};
-
 class Navigation{
     constructor(){
         this.select("control");
@@ -9,7 +5,6 @@ class Navigation{
 
     select(id){
         this.section = id;
-        this.reconstruct();
         document.getElementById("control").classList.remove('selected', 'mdl-color-text--blue-grey-800');
         document.getElementById("settings").classList.remove('selected', 'mdl-color-text--blue-grey-800');
         document.getElementById("manager").classList.remove('selected', 'mdl-color-text--blue-grey-800');
@@ -25,6 +20,7 @@ class Navigation{
         } else if(id === "settings"){
             document.getElementById("title").innerText = "Account settings";
         }
+        this.reconstruct();
     }
 
     reconstruct() {

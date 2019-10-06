@@ -100,6 +100,19 @@ class Toolbox {
         document.body.scrollTop = document.documentElement.scrollTop = 0;
     }
 
+    showLogIn(msg){
+        clearInterval(tools.interval);
+        document.getElementById("obfuscator").classList.add('is-visible');
+        showDialog({
+            text: this.templates.login.format(msg),
+            cancelable: false,
+            onLoaded: function() {
+                //updateMDL();
+            },
+        });
+        window.addEventListener('keydown',this.enter, false);
+    }
+
     showLoading(msg){
         showDialog({
             text: `<div style="text-align: center;"><br><span class="mdl-layout-title" style="color: #757575;">

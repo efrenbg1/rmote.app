@@ -9,6 +9,7 @@ class Session{
         var user = document.getElementById("user").value;
         var pw = document.getElementById("pw").value;
         tools.hideDiag();
+        tools.showLoading('profile');
         tools.req('/login', function(status, response){
             if (status === 200) {
                 tools.setCookie("Username", response['Username'], 10);
@@ -26,11 +27,7 @@ class Session{
         tools.req('/logout', function(status, response){
             document.cookie = "Username=;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
             document.cookie = "Session=;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
-            if (status === 200) {
-                this.showLogIn("Session closed");
-            } else {
-                tools.snack("Something went wrong");
-            }
+            this.showLogIn("Session closed");
         }.bind(this));
     }
 

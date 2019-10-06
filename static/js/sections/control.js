@@ -19,7 +19,6 @@ class Control{
             if (status === 200) {
                 this.updateCards(response);
             } else if (status === 401) {
-                session.showLogIn("Session timed out");
                 clearInterval(tools.interval);
             } else {
                 tools.snack("No internet");
@@ -59,8 +58,6 @@ class Control{
                 tools.hideDiag();
             } else {
                 tools.hideDiag();
-                session.logOut();
-                session.showLogIn("LogIn to continue");
             }
         }.bind(this));
     }

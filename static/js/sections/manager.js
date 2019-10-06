@@ -34,7 +34,6 @@ class Manager {
                 } catch (e) {}
             } else {
                 session.logOut();
-                session.showLogIn("LogIn to continue");
             }
         }.bind(this));
     }

@@ -32,7 +32,7 @@ def logout():
         if user is not None and hash is not None:
             if ddbb.sessions.get(user) == hash:
                 ddbb.sessions.delete(user)
-                return """{'Done':1}"""
+        return """{'Done':1}"""
     except Exception as e:
         pass
     return "401 (Unauthorized)", 401
