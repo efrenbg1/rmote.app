@@ -34,20 +34,23 @@ class Session{
 
     showLogIn(msg){
         clearInterval(tools.interval);
-        document.getElementById("obfuscator").classList.add('is-visible');
-        showDialog({
-            text: this.templates.login.format(msg),
-            cancelable: false,
-            onLoaded: function() {
-                //updateMDL();
-            },
-        });
-        window.addEventListener('keydown',this.enter, false);
+        console.log(document.getElementById('orrsDiag'));
+        if(document.getElementById('orrsDiag') === null) {
+            document.getElementById("obfuscator").classList.add('is-visible');
+            showDialog({
+                text: this.templates.login.format(msg),
+                cancelable: false,
+                onLoaded: function () {
+                    //updateMDL();
+                },
+            });
+            window.addEventListener('keydown', this.enter, false);
+        }
     }
 
     enter(e){
         if(e.keyCode === 13) {
-            this.LogIn();
+            session.logIn();
             window.removeEventListener('keydown', session.enter, false);
         }
     }
