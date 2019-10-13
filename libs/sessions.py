@@ -16,9 +16,7 @@ def login():
         if user is not None and pw is not None:
             user = base64.b64decode(user).decode('utf-8')
             pw = base64.b64decode(pw).decode('utf-8')
-            hash = ddbb.query("SELECT pw FROM user WHERE username=%s LIMIT 1", user)[0]
-            print(hash)
-            if password.checkHash(hash[0], pw):
+            if ddbb.checkPW(user, pw):
                 response = {"Username": user, "Cookie": start(user), "Permissions": []}
                 return str(json.dumps(response))
     except Exception as e:

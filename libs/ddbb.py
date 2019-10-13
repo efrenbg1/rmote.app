@@ -12,10 +12,15 @@ acls = redis.Redis(host='127.0.0.1', port=6379, db=2, decode_responses=True)
 topics = redis.Redis(host='127.0.0.1', port=6379, db=3, decode_responses=True)
 
 def connect_db():
-    return PersistentDB(creator=mysql, user='web', password='******', host='basa.10x.es', database='rmote')
+    return PersistentDB(creator=mysql, user='web', password='SuperPowers4All', host='127.0.0.1', database='rmote')
 
 app = Flask(__name__)
 
+def checkPW(user, pw):
+    hash = ddbb.query("SELECT pw FROM user WHERE username=%s LIMIT 1", user)[0]
+    if password.checkHash(hash[0], pw):
+        return True
+    return False
 
 def inAcls(user, mac):
     macs = acls.smembers(user)
