@@ -20,6 +20,7 @@ class Navigation{
         } else if(id === "settings"){
             document.getElementById("title").innerText = "Account settings";
         }
+        session.refresh();
         this.reconstruct();
     }
 

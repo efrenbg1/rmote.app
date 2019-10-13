@@ -39,6 +39,7 @@ class Manager {
     }
 
     add() {
+        session.refresh();
         var mac = document.getElementById("new_MAC").value;
         var name = document.getElementById("new_Name").value;
         var filter = /^([a-zA-Z0-9]{1,10})$/;
@@ -61,6 +62,7 @@ class Manager {
 
 
     save(MAC){
+        session.refresh();
         var name = document.getElementById(MAC + "_name");
         //var autoOFF = this.getMinutesUTC(document.getElementById(MAC + "_off").value);
         //var autoON = this.getMinutesUTC(document.getElementById(MAC + "_on").value);
@@ -106,6 +108,7 @@ class Manager {
     }
 
     share(MAC, old, email) {
+        session.refresh();
         if (email === undefined) {
             showDialog({
                 title: 'Insert e-mail address of receiver (blank to disable it):',
@@ -146,6 +149,7 @@ class Manager {
     }
 
     removeShare(MAC, force){
+        session.refresh();
         if(force) {
             tools.req('/manager/change', function (status, response){
                 tools.hideDiag();
@@ -178,6 +182,7 @@ class Manager {
     }
 
     remove(MAC, force) {
+        session.refresh();
         if(force) {
             tools.req('/manager/change', function(status, response){
                 tools.hideDiag();

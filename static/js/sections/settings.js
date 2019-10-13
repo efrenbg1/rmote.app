@@ -5,6 +5,7 @@ class Settings{
     }
 
     mail(){
+        session.refresh();
         showDialog({
             title: 'Change email:',
             text: `<center><form action="javascript:" autocomplete="off">
@@ -43,6 +44,7 @@ class Settings{
     }
 
     password(){
+        session.refresh();
         showDialog({
             title: 'Change password:',
             text: `<center>
@@ -87,6 +89,7 @@ class Settings{
     }
 
     destroy(){
+        session.refresh();
         showDialog({
             title: 'Please confirm data to delete the account:',
             text: `<center>

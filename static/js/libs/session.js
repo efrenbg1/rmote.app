@@ -3,6 +3,14 @@ class Session{
         this.templates = new sessionTemplates();
     }
 
+    refresh() {
+        try {
+            tools.setCookie("Username", tools.getCookie("Username"), 5);
+            tools.setCookie("Session", tools.getCookie("Session"), 5);
+            console.log("here");
+        } catch(e){
+        }
+    }
 
     logIn(){
         document.getElementById("obfuscator").classList.remove('is-visible');
@@ -13,8 +21,8 @@ class Session{
         tools.req('/login', function (status, response) {
             tools.hideDiag();
             if (status === 200) {
-                tools.setCookie("Username", response['Username'], 10);
-                tools.setCookie("Session", response['Cookie'], 10);
+                tools.setCookie("Username", response['Username'], 5);
+                tools.setCookie("Session", response['Cookie'], 5);
                 document.getElementById("username").innerText = tools.getCookie("Username");
                 section.reconstruct();
             } else {

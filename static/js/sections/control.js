@@ -5,6 +5,7 @@ class Control{
     }
 
     action(MAC, payload) {
+        session.refresh();
         tools.req('/control/action', function (status, response) {
             if (status === 200) {
                 tools.snack("Done")
