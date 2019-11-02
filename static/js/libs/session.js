@@ -65,8 +65,9 @@ class Session{
 }
 
 
-class sessionTemplates{
-    login = `<center><img style="margin-left: auto;margin-right: auto;" height="150" width="150" src="icon/android-chrome-192x192.png">
+class sessionTemplates {
+    constructor() {
+        this.login = `<center><img style="margin-left: auto;margin-right: auto;" height="150" width="150" src="icon/android-chrome-192x192.png">
     <p></p>
     <button class="mdl-button mdl-js-button mdl-button--primary">
     <i class="material-icons">announcement</i> {}
@@ -77,4 +78,5 @@ class sessionTemplates{
     <input type="password" placeholder="password" id="pw"/>
     <button onclick="session.logIn();" type="button">login</button>
     <p class="message">Not registered? <a href="/register.html">Create an account</a></p></form>`;
+    }
 }
