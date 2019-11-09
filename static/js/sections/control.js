@@ -27,24 +27,34 @@ class Control{
         }.bind(this));
     }
 
-    getCards(){
+    getCards() {
         tools.showLoading("data");
-        tools.req('/control/list', function(status, response){
+        tools.req('/control/list', function (status, response) {
             if (status === 200) {
+                console.log(response);
                 var cards = "";
                 //this.cluster = [];
-                for(var i=0; i < response['own'].length; i++){
+                for (var i = 0; i < response['own'].length; i++) {
                     var MAC = response['own'][i]['mac'];
                     var name = response['own'][i]['name'];
+                    var update = this.templates.update;
+                    if (parseInt(response['own'][i]['version']) == 3) {
+                        update = "";
+                    }
                     //if (response['own'][i]['cluster'] == "1") this.cluster.push(MAC);
-                    cards = cards + this.templates.card.format(MAC, MAC, MAC, MAC, name, MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC);
+                    cards = cards + this.templates.card.format(MAC, MAC, MAC, MAC, update, name, MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC);
+
                 }
-                if(response['share'].length > 0) {
+                if (response['share'].length > 0) {
                     var cards = cards + this.templates.divider.format('Shared');
                     for (var i = 0; i < response['share'].length; i++) {
                         var MAC = response['share'][i]['mac'];
                         var name = response['share'][i]['name'];
-                        cards = cards + this.templates.card.format(MAC, MAC, MAC, MAC, name, MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC);
+                        var update = this.templates.update;
+                        if (parseInt(response['share'][i]['version']) == 3) {
+                            update = "";
+                        }
+                        cards = cards + this.templates.card.format(MAC, MAC, MAC, MAC, update, name, MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC);
                     }
                 }
                 /*if(this.cluster.length > 0){
@@ -54,6 +64,8 @@ class Control{
                 }*/
                 document.getElementById("grid").innerHTML = cards;
                 tools.updateMDL();
+                this.updateCards(response['own']);
+                this.updateCards(response['share']);
                 this.update();
                 tools.interval = setInterval(active.update.bind(this), 1000);
                 tools.hideDiag();
@@ -86,21 +98,20 @@ class Control{
             "8": '/waiting',
             "9": '/waiting'
         };
-        var boards = Object.keys(response);
         var actions = Object.keys(boardAction);
-        for (var i = 0; i < boards.length; i++) {
+        for (var i = 0; i < response.length; i++) {
             try{
-                document.getElementById(boards[i]).style.backgroundImage = boardStatus[response[boards[i]]['Status']];
+                document.getElementById(response[i].mac).style.backgroundImage = boardStatus[response[i].status];
             } catch(error) {
-                document.getElementById(boards[i]).style.backgroundImage = 'url(/img/papelito.png)';
+                document.getElementById(response[i].mac).style.backgroundImage = 'url(/img/papelito.png)';
             }
-            tools.hide(boards[i] + '/error');
-            tools.hide(boards[i] + '/on');
-            tools.hide(boards[i] + '/done');
-            tools.hide(boards[i] + '/waiting');
-            tools.hide(boards[i] + '/turning');
-            if(response[boards[i]]['Status'] != '9' && response[boards[i]]['Status'] != null) {
-                tools.show(boards[i] + boardAction[response[boards[i]]['Action']]);
+            tools.hide(response[i].mac + '/error');
+            tools.hide(response[i].mac + '/on');
+            tools.hide(response[i].mac + '/done');
+            tools.hide(response[i].mac + '/waiting');
+            tools.hide(response[i].mac + '/turning');
+            if(response[i].status != '9' && response[i].status != null) {
+                tools.show(response[i].mac + boardAction[response[i].action]);
             }
         }
     }
@@ -114,6 +125,11 @@ class controlTemplates {
 <div class="hr-sect"><span class="mdl-layout-title">{}</span></div>
 </div>
   `;
+
+        this.update = `<button class="mdl-button mdl-js-button mdl-button--raised mdl-button mdl-js-ripple-effect"
+                data-upgraded=",MaterialButton,MaterialRipple" style="display: inline; visibility: visible;">
+            <i class="material-icons">system_update_alt</i> Update available
+            <span class="mdl-button__ripple-container"><span class="mdl-ripple"></span></span></button>`;
 
         this.card = `<div class="demo-cards mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-grid mdl-grid--no-spacing">
     <div class="demo-updates mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-cell--12-col-desktop">
@@ -132,6 +148,8 @@ class controlTemplates {
                 data-upgraded=",MaterialButton,MaterialRipple" style="display: inline; visibility: visible;">
             <i class="material-icons">done</i> Waiting for command
             <span class="mdl-button__ripple-container"><span class="mdl-ripple"></span></span></button>
+            
+        {}
 
         <div class="mdl-card__supporting-text mdl-color-text--grey-600">{} ({})</div>
 
@@ -176,7 +194,7 @@ class controlTemplates {
                 data-mdl-for="menu_{}">
                 <li class="mdl-menu__item mdl-js-ripple-effect" onclick="showDialog({
                 title: 'Are you sure?',
-                text: 'The board needs an active Internet connection and uninterrupted power',
+                text: 'The board needs an active Internet connection and uninterrupted power<br><br><b>Remember</b> -> Reload the page to dismiss the update message',
                 positive: {
                 title: 'Yes',
                 onClick: function (e) {

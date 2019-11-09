@@ -13,10 +13,16 @@ def controlList():
             response = {'own': [], 'share': []}
             if main != None:
                 for i in range(len(main)):
-                    response['own'].append({'mac': main[i][0], 'name': main[i][1], 'cluster': main[i][2]})
+                    status = ddbb.topics.hget(main[i][0], "0")
+                    action = ddbb.topics.hget(main[i][0], "1")
+                    version = ddbb.topics.hget(main[i][0], "2")
+                    response['own'].append({'mac': main[i][0], 'name': main[i][1], 'cluster': main[i][2], 'status': status, 'action': action, 'version': version})
             if secondary != None:
                 for i in range(len(secondary)):
-                    response['share'].append({'mac': secondary[i][0], 'name': secondary[i][1]})
+                    status = ddbb.topics.hget(secondary[i][0], "0")
+                    action = ddbb.topics.hget(secondary[i][0], "1")
+                    version = ddbb.topics.hget(secondary[i][0], "2")
+                    response['share'].append({'mac': secondary[i][0], 'name': secondary[i][1], 'status': status, 'action': action, 'version': version})
             if len(response['own']) == 0 and len(response['share']) == 0:
                 ddbb.query("DELETE FROM user WHERE username=%s", user)
                 return "401 (Unauthorized)", 401
@@ -34,11 +40,11 @@ def controlUpdate():
         try:
             user = request.cookies.get('Username')
             main = ddbb.query("(SELECT mac FROM acls WHERE user=(SELECT id FROM user WHERE username=%s)) UNION (SELECT acls.mac FROM acls, share WHERE share.user=(SELECT id FROM user WHERE username=%s) AND share.mac=acls.mac)", user, user)
-            response = {}
+            response = []
             for i in range(len(main)):
                 status = ddbb.topics.hget(main[i][0], "0")
                 action = ddbb.topics.hget(main[i][0], "1")
-                response[main[i][0]] = {'Status': status, 'Action': action}
+                response.append({'mac': main[i][0], 'status': status, 'action': action})
             return str(json.dumps(response))
         except Exception as e:
             print(e)

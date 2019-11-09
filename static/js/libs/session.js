@@ -7,7 +7,6 @@ class Session{
         try {
             tools.setCookie("Username", tools.getCookie("Username"), 5);
             tools.setCookie("Session", tools.getCookie("Session"), 5);
-            console.log("here");
         } catch(e){
         }
     }
