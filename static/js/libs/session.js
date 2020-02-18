@@ -1,4 +1,4 @@
-class Session{
+class Session {
     constructor() {
         this.templates = new sessionTemplates();
     }
@@ -7,11 +7,11 @@ class Session{
         try {
             tools.setCookie("Username", tools.getCookie("Username"), 5);
             tools.setCookie("Session", tools.getCookie("Session"), 5);
-        } catch(e){
+        } catch (e) {
         }
     }
 
-    logIn(){
+    logIn() {
         document.getElementById("obfuscator").classList.remove('is-visible');
         var user = document.getElementById("user").value;
         var pw = document.getElementById("pw").value;
@@ -27,12 +27,12 @@ class Session{
             } else {
                 this.showLogIn("Wrong credentials (" + status + ")");
             }
-        }.bind(this), {'Username': tools.encodeSTR(user),'Password': tools.encodeSTR(pw)});
+        }.bind(this), { 'Username': tools.encodeSTR(user), 'Password': tools.encodeSTR(pw) });
     }
 
     logOut() {
         clearInterval(tools.interval);
-        tools.req('/logout', function(status, response){
+        tools.req('/logout', function (status, response) {
             document.cookie = "Username=;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
             document.cookie = "Session=;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
             this.showLogIn("Session closed");
@@ -40,12 +40,12 @@ class Session{
     }
 
 
-    showLogIn(msg){
+    showLogIn(msg) {
         clearInterval(tools.interval);
-        if(document.getElementById('orrsDiag') === null) {
+        if (document.getElementById('orrsDiag') === null) {
             document.getElementById("obfuscator").classList.add('is-visible');
             showDialog({
-                text: this.templates.login.format(msg),
+                text: this.templates.login().format(msg),
                 cancelable: false,
                 onLoaded: function () {
                     //updateMDL();
@@ -55,8 +55,8 @@ class Session{
         }
     }
 
-    enter(e){
-        if(e.keyCode === 13) {
+    enter(e) {
+        if (e.keyCode === 13) {
             session.logIn();
             window.removeEventListener('keydown', session.enter, false);
         }
@@ -65,17 +65,33 @@ class Session{
 
 
 class sessionTemplates {
-    constructor() {
-        this.login = `<center><img style="margin-left: auto;margin-right: auto;" height="150" width="150" src="icon/android-chrome-192x192.png">
+    login() {
+        return `<center>
+    <img style="margin-left: auto;margin-right: auto;" height="150" width="150" src="icon/android-chrome-192x192.png">
     <p></p>
     <button class="mdl-button mdl-js-button mdl-button--primary">
-    <i class="material-icons">announcement</i> {}
-    </button></center><br>
-    <div class="form">
+        <i class="material-icons">announcement</i> {}
+    </button>
+</center>
+<br>
+<div class="form">
     <form class="login-form">
-    <input type="text" placeholder="username" id="user"/>
-    <input type="password" placeholder="password" id="pw"/>
-    <button onclick="session.logIn();" type="button">login</button>
-    <p class="message">Not registered? <a href="/register.html">Create an account</a></p></form>`;
+        <input type="text" placeholder="username" id="user" />
+        <input type="password" placeholder="password" id="pw" />
+        <button onclick="session.logIn();" type="button">login</button>
+        <p class="message">Not registered? <a href="/register.html">Create an account</a></p>
+    </form>
+</div>
+<div class="hr-sect">
+    <span class="mdl-layout-title">Don't have a board?</span>
+</div>
+<br>
+<center>
+    <p class="message">Boards can be purchased via PayPal</p>
+    <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent" onclick="location.href='/buy.html'">
+        <i class="material-icons">shopping_cart</i> Buy now
+    </button>
+</center>
+<br>`;
     }
 }

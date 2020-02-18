@@ -1,26 +1,31 @@
 import pymysql as mysql
 from DBUtils.PersistentDB import PersistentDB
 from flask import Flask, g, request
-import redis, warnings
+import redis
+import warnings
 from libs import ddbb, password
 
 warnings.filterwarnings('ignore', category=mysql.Warning)
+host = "192.168.0.4"
+sessions = redis.Redis(host=host, port=6379, db=0, decode_responses=True)
+users = redis.Redis(host=host, port=6379, db=1, decode_responses=True)
+acls = redis.Redis(host=host, port=6379, db=2, decode_responses=True)
+topics = redis.Redis(host=host, port=6379, db=3, decode_responses=True)
 
-sessions = redis.Redis(host='127.0.0.1', port=6379, db=0, decode_responses=True)
-users = redis.Redis(host='127.0.0.1', port=6379, db=1, decode_responses=True)
-acls = redis.Redis(host='127.0.0.1', port=6379, db=2, decode_responses=True)
-topics = redis.Redis(host='127.0.0.1', port=6379, db=3, decode_responses=True)
 
 def connect_db():
-    return PersistentDB(creator=mysql, user='web', password='SuperPowers4All', host='127.0.0.1', database='rmote')
+    return PersistentDB(creator=mysql, user='web', password='Edilizia5!', host=host, database='rmote')
+
 
 app = Flask(__name__)
+
 
 def checkPW(user, pw):
     hash = ddbb.query("SELECT pw FROM user WHERE username=%s LIMIT 1", user)[0]
     if password.checkHash(hash[0], pw):
         return True
     return False
+
 
 def inAcls(user, mac):
     macs = acls.smembers(user)
@@ -37,6 +42,8 @@ def inAcls(user, mac):
     return False
 
 # Function to get the database
+
+
 def get_db():
     if not hasattr(app, 'db'):
         app.db = connect_db()
@@ -56,6 +63,7 @@ def query(sql, *param):
         pass
     return None
 
+
 def querymany(sql, *param):
     try:
         cursor = get_db().cursor()
@@ -69,6 +77,7 @@ def querymany(sql, *param):
         pass
     return None
 
+
 def insert(sql, *param):
     try:
         cursor = get_db().cursor()
@@ -81,7 +90,3 @@ def insert(sql, *param):
         pass
     get_db().commit()
     return None
-
-
-
-

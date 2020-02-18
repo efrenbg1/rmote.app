@@ -5,19 +5,19 @@ class Toolbox {
      * @param (function) callback Function that calls back when it was successful
      * @param (Object) headers
      */
-    req(url, callback, headers){
+    req(url, callback, headers) {
         let req = new XMLHttpRequest();
         req.open('GET', url, true);
-        if(headers !== undefined){
+        if (headers !== undefined) {
             let keys = Object.keys(headers);
-            for(let i = 0; i<keys.length; i++){
+            for (let i = 0; i < keys.length; i++) {
                 req.setRequestHeader(keys[i], headers[keys[i]]);
             }
         }
         req.responseType = 'json';
-        req.onload = function(){
+        req.onload = function () {
             callback(req.status, req.response);
-            if(req.status === 401){
+            if (req.status === 401) {
                 session.showLogIn("Session timed out")
             }
         }.bind(this);
@@ -30,54 +30,54 @@ class Toolbox {
      * @param (function) callback Function that calls back when it was successful
      * @param (Object) headers
      */
-    controlledReq(url, callback, headers){
-        if(this.uReq !== undefined){
+    controlledReq(url, callback, headers) {
+        if (this.uReq !== undefined) {
             this.uReq.abort();
         }
         this.uReq = new XMLHttpRequest();
         this.uReq.open('GET', url, true);
-        if(headers !== undefined){
+        if (headers !== undefined) {
             let keys = Object.keys(headers);
-            for(let i = 0; i<keys.length; i++){
+            for (let i = 0; i < keys.length; i++) {
                 this.uReq.setRequestHeader(keys[i], headers[keys[i]]);
             }
         }
         this.uReq.responseType = 'json';
-        this.uReq.onload = function(){
+        this.uReq.onload = function () {
             callback(this.uReq.status, this.uReq.response);
         }.bind(this);
         this.uReq.send();
     }
 
 
-    getMinutesUTC(time){
+    getMinutesUTC(time) {
         var filter = /^(0[0-9]|1[0-9]|2[0-3]|[0-9]):[0-5][0-9]$/;
-        try{
-            if(!filter.test(time)){
+        try {
+            if (!filter.test(time)) {
                 return null;
             }
             var offset = new Date().getTimezoneOffset();
             var off = time.split(':');
             var minutes = (+off[0]) * 60 + (+off[1]);
-            return minutes+offset;
-        } catch(error){
+            return minutes + offset;
+        } catch (error) {
             console.log(error);
             return null;
         }
     }
 
     getTimeUTC(time) {
-        if(time === "null"){
+        if (time === "null") {
             return "";
         }
         var offset = new Date().getTimezoneOffset();
         time = parseInt(time) - offset;
-        var hours = Math.floor(time/60);
-        if(hours < 10){
+        var hours = Math.floor(time / 60);
+        if (hours < 10) {
             hours = "0" + hours.toString()
         }
-        var minutes = time%60;
-        if(minutes < 10){
+        var minutes = time % 60;
+        if (minutes < 10) {
             minutes = "0" + minutes.toString()
         }
         return "{}:{}".format(hours, minutes);
@@ -100,55 +100,61 @@ class Toolbox {
         document.body.scrollTop = document.documentElement.scrollTop = 0;
     }
 
-    showLogIn(msg){
+    showLogIn(msg) {
         clearInterval(tools.interval);
         document.getElementById("obfuscator").classList.add('is-visible');
         showDialog({
             text: this.templates.login.format(msg),
             cancelable: false,
-            onLoaded: function() {
+            onLoaded: function () {
                 //updateMDL();
             },
         });
-        window.addEventListener('keydown',this.enter, false);
+        window.addEventListener('keydown', this.enter, false);
     }
 
-    showLoading(msg){
+    showLoading(msg) {
+        var html = `<div style="text-align: center;">
+        <br>
+        <span class="mdl-layout-title" style="color: #757575;">Loading {}...</span>
+        <p></p>
+        <br>
+        <div class="mdl-spinner mdl-js-spinner is-active" style=" width: 80px;height: 80px;">
+        </div>
+</div>
+<p></p>`;
         showDialog({
-            text: `<div style="text-align: center;"><br><span class="mdl-layout-title" style="color: #757575;">
-        Loading {}...
-        </span>
-        <p></p><br>
-        <div class="mdl-spinner mdl-js-spinner is-active" style=" width: 80px;height: 80px;"></div></div>
-        <p></p></div>`.format(msg),
+            text: html.format(msg),
             cancelable: true,
-            onHidden: function() {
-                if(tools.getCookie("Username") == null && tools.getCookie("Session") == null){
+            onHidden: function () {
+                if (tools.getCookie("Username") == null && tools.getCookie("Session") == null) {
                     session.showLogIn('Session expired', '');
                 }
             },
         });
     }
 
-    showFailed(){
+    showFailed() {
+        var html = `<div style="text-align: center;"><br>
+        <button class="mdl-button mdl-js-button mdl-button--primary">
+                <i class="material-icons">announcement</i> Failed to load page
+        </button></center><br>
+        <p></p><br>
+        <img src="/img/sad.jpg" style="max-width:50%;max-height:50%;">
+        <p></p><br>
+        <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" onclick="location.reload();">
+                <i class="material-icons">autorenew</i> Press to retry
+        </button>
+        <p></p><br>
+</div>`;
         showDialog({
-            text: `'<div style="text-align: center;"><br>
-    <button class="mdl-button mdl-js-button mdl-button--primary">
-    <i class="material-icons">announcement</i> Failed to load page
-    </button></center><br>
-    <p></p><br>
-    <img src="/img/sad.jpg" style="max-width:50%;max-height:50%;">
-    <p></p><br>
-    <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" onclick="location.reload();">
-    <i class="material-icons">autorenew</i> Press to retry
-    </button>
-    <p></p><br></div>`,
-            cancelable: false,
+            text: html,
+            cancelable: false
         });
     }
 
 
-    hideDiag(){
+    hideDiag() {
         try {
             document.getElementById("orrsDiag").remove();
         } catch (e) {
@@ -158,17 +164,17 @@ class Toolbox {
 
 
     snack(msg) {
-        (function() {
+        (function () {
             'use strict';
             var snackbarContainer = document.querySelector('#demo-toast-example');
-            setTimeout(function(){
-                snackbarContainer.MaterialSnackbar.showSnackbar({message: msg});
+            setTimeout(function () {
+                snackbarContainer.MaterialSnackbar.showSnackbar({ message: msg });
             }, 500);
         }())
     }
 
-    updateMDL(){
-        if(!(typeof(componentHandler) == 'undefined')){
+    updateMDL() {
+        if (!(typeof (componentHandler) == 'undefined')) {
             componentHandler.upgradeAllRegistered();
         }
     }
@@ -177,7 +183,7 @@ class Toolbox {
      * Sets a title taken from the database
      * @param (string) str The title you will set
      */
-    setTitle(str){
+    setTitle(str) {
         document.getElementById("title").innerText = str;
     }
 
@@ -306,22 +312,22 @@ class Toolbox {
     }
 
 
-    startChrono(){
+    startChrono() {
         this.chrono = performance.now();
     }
 
-    stopChrono(){
-        console.log("Took: " + Math.round((performance.now() - this.chrono)*100)/100 + " milliseconds.")
+    stopChrono() {
+        console.log("Took: " + Math.round((performance.now() - this.chrono) * 100) / 100 + " milliseconds.")
     }
 }
 
 
-Element.prototype.remove = function() {
+Element.prototype.remove = function () {
     this.parentElement.removeChild(this);
 };
-NodeList.prototype.remove = HTMLCollection.prototype.remove = function() {
-    for(var i = this.length - 1; i >= 0; i--) {
-        if(this[i] && this[i].parentElement) {
+NodeList.prototype.remove = HTMLCollection.prototype.remove = function () {
+    for (var i = this.length - 1; i >= 0; i--) {
+        if (this[i] && this[i].parentElement) {
             this[i].parentElement.removeChild(this[i]);
         }
     }
