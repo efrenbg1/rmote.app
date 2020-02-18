@@ -5,8 +5,8 @@ import redis
 import warnings
 from libs import ddbb, password
 
+host = "127.0.0.1"
 warnings.filterwarnings('ignore', category=mysql.Warning)
-host = "192.168.0.4"
 sessions = redis.Redis(host=host, port=6379, db=0, decode_responses=True)
 users = redis.Redis(host=host, port=6379, db=1, decode_responses=True)
 acls = redis.Redis(host=host, port=6379, db=2, decode_responses=True)
@@ -14,7 +14,7 @@ topics = redis.Redis(host=host, port=6379, db=3, decode_responses=True)
 
 
 def connect_db():
-    return PersistentDB(creator=mysql, user='web', password='Edilizia5!', host=host, database='rmote')
+    return PersistentDB(creator=mysql, user='web', password='SuperPowers4All', host=host, database='rmote')
 
 
 app = Flask(__name__)

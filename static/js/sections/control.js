@@ -1,7 +1,8 @@
-class Control{
+class Control {
     constructor() {
         this.templates = new controlTemplates();
         this.getCards();
+        this.version = 5;
     }
 
     action(MAC, payload) {
@@ -12,11 +13,11 @@ class Control{
             } else {
                 tools.snack("Failed!")
             }
-        }.bind(this), {'mac': MAC, 'payload': payload});
+        }.bind(this), { 'mac': MAC, 'payload': payload });
     }
 
-    update(){
-        tools.req('/control/update', function(status, response){
+    update() {
+        tools.req('/control/update', function (status, response) {
             if (status === 200) {
                 this.updateCards(response);
             } else if (status === 401) {
@@ -31,14 +32,13 @@ class Control{
         tools.showLoading("data");
         tools.req('/control/list', function (status, response) {
             if (status === 200) {
-                console.log(response);
                 var cards = "";
                 //this.cluster = [];
                 for (var i = 0; i < response['own'].length; i++) {
                     var MAC = response['own'][i]['mac'];
                     var name = response['own'][i]['name'];
                     var update = this.templates.update;
-                    if (parseInt(response['own'][i]['version']) == 3) {
+                    if (parseInt(response['own'][i]['version']) == this.version) {
                         update = "";
                     }
                     //if (response['own'][i]['cluster'] == "1") this.cluster.push(MAC);
@@ -51,7 +51,7 @@ class Control{
                         var MAC = response['share'][i]['mac'];
                         var name = response['share'][i]['name'];
                         var update = this.templates.update;
-                        if (parseInt(response['share'][i]['version']) == 3) {
+                        if (parseInt(response['share'][i]['version']) == this.version) {
                             update = "";
                         }
                         cards = cards + this.templates.card.format(MAC, MAC, MAC, MAC, update, name, MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC);
@@ -100,9 +100,9 @@ class Control{
         };
         var actions = Object.keys(boardAction);
         for (var i = 0; i < response.length; i++) {
-            try{
+            try {
                 document.getElementById(response[i].mac).style.backgroundImage = boardStatus[response[i].status];
-            } catch(error) {
+            } catch (error) {
                 document.getElementById(response[i].mac).style.backgroundImage = 'url(/img/papelito.png)';
             }
             tools.hide(response[i].mac + '/error');
@@ -110,7 +110,7 @@ class Control{
             tools.hide(response[i].mac + '/done');
             tools.hide(response[i].mac + '/waiting');
             tools.hide(response[i].mac + '/turning');
-            if(response[i].status != '9' && response[i].status != null) {
+            if (response[i].status != '9' && response[i].status != null) {
                 tools.show(response[i].mac + boardAction[response[i].action]);
             }
         }
