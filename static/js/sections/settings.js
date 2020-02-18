@@ -1,10 +1,10 @@
-class Settings{
-    constructor(){
+class Settings {
+    constructor() {
         this.templates = new settingsTemplates();
         document.getElementById("grid").innerHTML = this.templates.grid;
     }
 
-    mail(){
+    mail() {
         session.refresh();
         showDialog({
             title: 'Change email:',
@@ -32,18 +32,18 @@ class Settings{
             positive: {
                 title: '<h style="color:green;">Save</h>',
                 id: 'save',
-                onClick: function() {active.updateEmail();}
+                onClick: function () { active.updateEmail(); }
             },
             negative: {
                 title: '<h style="color:red;" disabled>Cancel</h>'
             },
-            onLoaded: function() {
+            onLoaded: function () {
                 tools.hide("save");
             }
         });
     }
 
-    password(){
+    password() {
         session.refresh();
         showDialog({
             title: 'Change password:',
@@ -76,19 +76,19 @@ class Settings{
             positive: {
                 title: '<h style="color:green;">Save</h>',
                 id: 'save',
-                onClick: function() {active.updatePassword();}
+                onClick: function () { active.updatePassword(); }
             },
             negative: {
                 title: '<h style="color:red;" disabled>Cancel</h>'
             },
-            onLoaded: function() {
+            onLoaded: function () {
                 tools.hide("save");
                 tools.hide("popup1");
             }
         });
     }
 
-    destroy(){
+    destroy() {
         session.refresh();
         showDialog({
             title: 'Please confirm data to delete the account:',
@@ -112,12 +112,12 @@ class Settings{
             positive: {
                 title: '<h style="color:red;">Delete</h>',
                 id: 'delete',
-                onClick: function() {active.destroyAccount();}
+                onClick: function () { active.destroyAccount(); }
             },
             negative: {
                 title: '<h style="color:green;" disabled>Cancel</h>'
             },
-            onLoaded: function() {
+            onLoaded: function () {
                 tools.hide("delete");
             }
         });
@@ -135,7 +135,7 @@ class Settings{
                 } else {
                     tools.snack("Something went wrong")
                 }
-            }.bind(this), {'new': tools.encodeSTR(input_1), 'pw': tools.encodeSTR(input_3)});
+            }.bind(this), { 'new': tools.encodeSTR(input_1), 'pw': tools.encodeSTR(input_3) });
         }
     }
 
@@ -149,7 +149,7 @@ class Settings{
                 } else {
                     tools.snack("Something went wrong")
                 }
-            }.bind(this), {'pw': tools.encodeSTR(input_1), 'new': tools.encodeSTR(input_2)});
+            }.bind(this), { 'pw': tools.encodeSTR(input_1), 'new': tools.encodeSTR(input_2) });
         }
     }
 
@@ -163,7 +163,7 @@ class Settings{
                 } else {
                     tools.snack("Something went wrong")
                 }
-            }.bind(this), {'pw': tools.encodeSTR(input_2)});
+            }.bind(this), { 'pw': tools.encodeSTR(input_2) });
         }
     }
 
@@ -174,7 +174,7 @@ class Settings{
         var pw = document.getElementById("input-3").value;
         var filter = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
         var filter2 = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])([a-zA-Z0-9]{8,20})$/;
-        if(email) {
+        if (email) {
             if (!filter.test(email)) {
                 tools.show("valid");
                 tools.hide("match");
@@ -182,7 +182,7 @@ class Settings{
             } else {
                 tools.hide("valid");
                 if (email == email2) {
-                    if(!filter2.test(pw)){
+                    if (!filter2.test(pw)) {
                         tools.show("pw");
                         tools.hide("match");
                     } else {
@@ -212,7 +212,7 @@ class Settings{
         var input_2_text = document.getElementById("input-2-text");
         var input_3_text = document.getElementById("input-3-text");
         var filter = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])([a-zA-Z0-9]{8,20})$/;
-        if(input_1.value) {
+        if (input_1.value) {
             if (!filter.test(input_1.value)) {
                 tools.show("popup1");
                 tools.hide("save");
@@ -222,12 +222,12 @@ class Settings{
             } else {
                 tools.hide("popup1");
                 tools.hide("popup2_old");
-                if(input_2.value) {
+                if (input_2.value) {
                     if (!filter.test(input_2.value)) {
                         tools.show("popup2");
                         tools.hide("save");
                         tools.hide("popup3");
-                    } else if(input_2.value == input_1.value){
+                    } else if (input_2.value == input_1.value) {
                         tools.hide("save");
                         tools.hide("popup3");
                         tools.hide("popup2");
@@ -248,7 +248,7 @@ class Settings{
                     tools.hide("popup2");
                 }
             }
-        }  else {
+        } else {
             tools.hide("save");
             tools.hide("popup1");
         }
@@ -260,12 +260,10 @@ class Settings{
         var pw = document.getElementById("input-2");
         var filter_email = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
         var filter_pw = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])([a-zA-Z0-9]{8,20})$/;
-        if(tools.getCookie('Username') == ""){
+        if (tools.getCookie('Username') == "") {
             session.logIn("Session expired");
         }
-        if(email.value) {
-            console.log(email.value);
-            console.log(tools.getCookie('Username'));
+        if (email.value) {
             if (tools.getCookie('Username') != email.value) {
                 tools.show("popup2");
                 tools.hide("popup3");
@@ -293,8 +291,8 @@ class Settings{
 }
 
 
-class settingsTemplates{
-    constructor(){
+class settingsTemplates {
+    constructor() {
         this.grid = `<div class="demo-cards mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-grid mdl-grid--no-spacing">
     <div class="demo-updates mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-cell--12-col-desktop">
 

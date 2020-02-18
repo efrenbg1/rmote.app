@@ -16,13 +16,13 @@ tempMin = ""
 for file in os.listdir('static/js/sections'):
     with open('static/js/sections/' + file, 'r') as f:
         tempMin += jsmin.jsmin(f.read(), quote_chars="'\"`")
-with open('static/sections.min.js', "w") as f:
+with open('static/js/sections.min.js', "w") as f:
     f.write(tempMin)
 tempMin = ""
 for file in os.listdir('static/js/libs'):
     with open('static/js/libs/' + file, 'r') as f:
         tempMin += jsmin.jsmin(f.read(), quote_chars="'\"`")
-with open('static/libs.min.js', "w") as f:
+with open('static/js/libs.min.js', "w") as f:
     f.write(tempMin)
 hash = checksumdir.dirhash(os.path.join(os.getcwd(), 'static'))[0:4]
 print("Hash: " + hash)
