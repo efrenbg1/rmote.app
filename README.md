@@ -4,4 +4,4 @@ Don't know how to compile? Don't hesitate in sending me an e-mail<br>
 <br>
 Kickstarter: http://kck.st/2Z84RTn<br>
 Built using: python 3.7 on PyCharm<br>
-Libraries: Flask 1.1.0, DBUtils 1.3, PyMySQL 0.9.3, redis 3.3.8, checksumdir 1.1.7<br>
+Libraries: Flask 1.1.0, DBUtils 1.3, PyMySQL 0.9.3, redis 3.3.8, checksumdir 1.1.7, jsmin 2.2.2<br>
