@@ -1,4 +1,89 @@
 class Toolbox {
+    constructor() {
+        this.socket = null;
+        this.opened = false;
+        this.callback = [];
+        this.uReqTimer = null;
+        this.setCookie('Content', version, 43200);
+    }
+
+
+    //////// WEBSOCKETS ////////
+
+    sOpen() {
+        if (this.opened) return;
+        this.opened = true;
+        this.socket = io();
+        this.socket.on('connect', function () {
+            this.callback.forEach((n) => {
+                n();
+            });
+            this.callback = []; // Remove last callback
+        }.bind(this));
+        this.socket.on('connect_error', function (err) {
+            tools.req('/check');
+            this.sClose();
+        }.bind(this));
+        this.socket.on('disconnect', function (err) {
+            console.log(err)
+            this.sClose();
+        }.bind(this));
+    }
+
+    sClose() {
+        try {
+            this.socket.disconnect();
+        } catch (e) { }
+        this.opened = false;
+    }
+
+    sreq(event, callback, headers) {
+        clearTimeout(this.uReqTimer);
+        if (!session.check()) {
+            this.sClose();
+            return;
+        }
+        if (this.socket == null || this.socket.disconnected) {
+            this.callback.push(function () {
+                tools.sreq(event, callback, headers);
+            }.bind(this));
+            this.sOpen();
+            return;
+        }
+        this.socket.emit(event, headers, function (response, status) {
+            if (typeof status != "number") status = 200;
+            callback(status, response);
+        }.bind(this));
+    }
+
+    screq(event, callback, headers) {
+        clearTimeout(this.uReqTimer);
+        if (!session.check()) {
+            this.sClose();
+            return;
+        }
+        this.uReqTimer = setTimeout(function () {
+            if (!session.check()) {
+                this.sClose();
+                return;
+            }
+            if (this.socket == null || this.socket.disconnected) {
+                this.callback.push(function () {
+                    tools.sreq(event, callback, headers);
+                }.bind(this));
+                this.sOpen();
+                return;
+            }
+            session.refresh();
+            this.socket.emit(event, headers, function (response, status) {
+                if (typeof status != "number") status = 200;
+                callback(status, response);
+            }.bind(this));
+        }.bind(this), 500);
+    }
+
+
+    //////// HTML ////////
     /**
      * Makes a request using the parameters introduced in the function
      * @param (string) url The url you will make the request to
@@ -16,10 +101,11 @@ class Toolbox {
         }
         req.responseType = 'json';
         req.onload = function () {
-            callback(req.status, req.response);
             if (req.status === 401) {
-                session.showLogIn("Session timed out")
+                tools.hideDiag();
+                tools.showLogIn("Session timed out")
             }
+            if (callback != undefined) callback(req.status, req.response);
         }.bind(this);
         req.send();
     }
@@ -50,61 +136,13 @@ class Toolbox {
     }
 
 
-    getMinutesUTC(time) {
-        var filter = /^(0[0-9]|1[0-9]|2[0-3]|[0-9]):[0-5][0-9]$/;
-        try {
-            if (!filter.test(time)) {
-                return null;
-            }
-            var offset = new Date().getTimezoneOffset();
-            var off = time.split(':');
-            var minutes = (+off[0]) * 60 + (+off[1]);
-            return minutes + offset;
-        } catch (error) {
-            console.log(error);
-            return null;
-        }
-    }
-
-    getTimeUTC(time) {
-        if (time === "null") {
-            return "";
-        }
-        var offset = new Date().getTimezoneOffset();
-        time = parseInt(time) - offset;
-        var hours = Math.floor(time / 60);
-        if (hours < 10) {
-            hours = "0" + hours.toString()
-        }
-        var minutes = time % 60;
-        if (minutes < 10) {
-            minutes = "0" + minutes.toString()
-        }
-        return "{}:{}".format(hours, minutes);
-    }
-
-    select(id) {
-        var all = document.getElementsByClassName('active');
-        while (all.length > 0) {
-            all[0].classList.remove('selected', 'mdl-color-text--blue-grey-800');
-        }
-        var sel = document.getElementById(id);
-        /*var obfuscator = document.getElementsByClassName('is-visible');
-        while (obfuscator.length > 0) {
-            obfuscator[0].classList.remove('is-visible');
-        }*/
-        sel.classList.add('selected', 'mdl-color-text--blue-grey-800');
-    }
-
-    scrollTop() {
-        document.body.scrollTop = document.documentElement.scrollTop = 0;
-    }
+    //////// MODALS ////////
 
     showLogIn(msg) {
         clearInterval(tools.interval);
         document.getElementById("obfuscator").classList.add('is-visible');
         showDialog({
-            text: this.templates.login.format(msg),
+            text: session.templates.login().format(msg),
             cancelable: false,
             onLoaded: function () {
                 //updateMDL();
@@ -127,13 +165,14 @@ class Toolbox {
             text: html.format(msg),
             cancelable: true,
             onHidden: function () {
-                if (tools.getCookie("Username") == null && tools.getCookie("Session") == null) {
-                    session.showLogIn('Session expired', '');
+                if (!session.check()) {
+                    tools.showLogIn('Session expired', '');
                 }
             },
         });
     }
 
+    // TODO comprobar si se puede usar en algún sitio
     showFailed() {
         var html = `<div style="text-align: center;"><br>
         <button class="mdl-button mdl-js-button mdl-button--primary">
@@ -153,7 +192,6 @@ class Toolbox {
         });
     }
 
-
     hideDiag() {
         try {
             document.getElementById("orrsDiag").remove();
@@ -161,7 +199,6 @@ class Toolbox {
             console.log(e);
         }
     }
-
 
     snack(msg) {
         (function () {
@@ -173,6 +210,10 @@ class Toolbox {
         }())
     }
 
+
+    //////// DOM ////////
+
+    // TODO replace component handler everywhere
     updateMDL() {
         if (!(typeof (componentHandler) == 'undefined')) {
             componentHandler.upgradeAllRegistered();
@@ -180,39 +221,9 @@ class Toolbox {
     }
 
     /**
-     * Sets a title taken from the database
-     * @param (string) str The title you will set
-     */
-    setTitle(str) {
-        document.getElementById("title").innerText = str;
-    }
-
-    /**
-     * This function makes an encode of the JSON to a base-64
-     */
-    encodeJSON(string) {
-        return btoa(unescape(encodeURIComponent(JSON.stringify(string))));
-    }
-
-    /**
-     * Encodes a string into base-64
-     */
-    encodeSTR(string) {
-        return btoa(unescape(encodeURIComponent(string)));
-    }
-
-
-    /**
-     * It shapes the title of the template
-     */
-    title(section) {
-        document.title = "Gestión 3.0 - " + section;
-    }
-
-    /**
-     * Checks if an id corresponds to an element and shows it. Otherwise, the application warns about it
-     * @param (number) id Id of an element to get from database
-     */
+    * Checks if an id corresponds to an element and shows it. Otherwise, the application warns about it
+    * @param (number) id Id of an element to get from database
+    */
     show(id) {
         try {
             var object = document.getElementById(id);
@@ -236,30 +247,18 @@ class Toolbox {
         }
     }
 
-    toggle(id) {
-        try {
-            var object = document.getElementById(id);
-            if (object.style.display === "none") {
-                this.show(id);
-            } else {
-                this.hide(id);
-            }
-        } catch (err) {
-            console.log("Can't find object by id: {}".format(id));
-        }
-    }
+
+
+
+    //////// ENCODERS ////////
 
     /**
-     * This function lets you remove the innerHTML of an element by its id. In case it can't find it, you will get warned
-     * @param (string) id name of object to remove innerHTML
+     * Encodes a string into base-64
      */
-    remove(id) {
-        try {
-            document.getElementById(id).innerHTML = "";
-        } catch (err) {
-            console.log("Can't find object by id: {}".format(id));
-        }
+    encodeSTR(string) {
+        return btoa(unescape(encodeURIComponent(string)));
     }
+
 
     /**
      * Finds the cookie of a determined value
@@ -289,36 +288,40 @@ class Toolbox {
         }
     }
 
-
-
-    getRem() {
-        var pa = document.body;
-        var who = document.createElement('div');
-        who.style.cssText = 'display:inline-block; padding:0; line-height:1; position:absolute; visibility:hidden; font-size:1em';
-        who.appendChild(document.createTextNode('M'));
-        pa.appendChild(who);
-        var fs = who.offsetHeight;
-        pa.removeChild(who);
-        return document.body.scrollHeight / fs;
-    }
-
-
-    getHeight() {
-        var body = document.body,
-            html = document.documentElement;
-        var height = Math.max(body.scrollHeight, body.offsetHeight,
-            html.clientHeight, html.scrollHeight, html.offsetHeight);
-        return height;
-    }
-
-
-    startChrono() {
-        this.chrono = performance.now();
-    }
-
-    stopChrono() {
-        console.log("Took: " + Math.round((performance.now() - this.chrono) * 100) / 100 + " milliseconds.")
-    }
+    /*
+       getMinutesUTC(time) {
+           var filter = /^(0[0-9]|1[0-9]|2[0-3]|[0-9]):[0-5][0-9]$/;
+           try {
+               if (!filter.test(time)) {
+                   return null;
+               }
+               var offset = new Date().getTimezoneOffset();
+               var off = time.split(':');
+               var minutes = (+off[0]) * 60 + (+off[1]);
+               return minutes + offset;
+           } catch (error) {
+               console.log(error);
+               return null;
+           }
+       }
+   
+       getTimeUTC(time) {
+           if (time === "null") {
+               return "";
+           }
+           var offset = new Date().getTimezoneOffset();
+           time = parseInt(time) - offset;
+           var hours = Math.floor(time / 60);
+           if (hours < 10) {
+               hours = "0" + hours.toString()
+           }
+           var minutes = time % 60;
+           if (minutes < 10) {
+               minutes = "0" + minutes.toString()
+           }
+           return "{}:{}".format(hours, minutes);
+       }
+       */
 }
 
 

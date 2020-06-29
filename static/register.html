@@ -229,7 +229,7 @@
         req.onload = function () {
             callback(req.status, req.response);
             if (req.status === 401) {
-                session.showLogIn("Session timed out")
+                tools.showLogIn("Session timed out")
             }
         }.bind(this);
         req.send();

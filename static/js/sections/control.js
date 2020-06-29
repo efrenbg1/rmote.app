@@ -17,7 +17,7 @@ class Control {
     }
 
     update() {
-        tools.req('/control/update', function (status, response) {
+        tools.sreq('/control/update', function (status, response) {
             if (status === 200) {
                 this.updateCards(response);
             } else if (status === 401) {
@@ -30,7 +30,7 @@ class Control {
 
     getCards() {
         tools.showLoading("data");
-        tools.req('/control/list', function (status, response) {
+        tools.sreq('/control/list', function (status, response) {
             if (status === 200) {
                 var cards = "";
                 for (var i = 0; i < response['own'].length; i++) {

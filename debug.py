@@ -40,6 +40,5 @@ observer.start()
 
 server = Server()
 server.watch('static/sections.min.js', delay=2)
-server.watch('static/index.min.css', delay=2)
 server.watch('static/index.html', delay=2)
 server.serve(liveport=35729, debug=False)
