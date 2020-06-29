@@ -7,7 +7,7 @@
             "label": "Run - rmote.app",
             "command": "python",
             "args": [
-                "app.py"
+                "debug.py"
             ],
             "type": "shell",
             "options": {
