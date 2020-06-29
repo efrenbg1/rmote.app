@@ -33,7 +33,6 @@ class Control {
         tools.req('/control/list', function (status, response) {
             if (status === 200) {
                 var cards = "";
-                //this.cluster = [];
                 for (var i = 0; i < response['own'].length; i++) {
                     var MAC = response['own'][i]['mac'];
                     var name = response['own'][i]['name'];
@@ -41,9 +40,11 @@ class Control {
                     if (parseInt(response['own'][i]['version']) == this.version) {
                         update = "";
                     }
-                    //if (response['own'][i]['cluster'] == "1") this.cluster.push(MAC);
-                    cards = cards + this.templates.card.format(MAC, MAC, MAC, MAC, update, name, MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC);
-
+                    cards += this.templates.card.render({
+                        update: update,
+                        name: name,
+                        MAC: MAC
+                    });
                 }
                 if (response['share'].length > 0) {
                     var cards = cards + this.templates.divider.format('Shared');
@@ -54,14 +55,13 @@ class Control {
                         if (parseInt(response['share'][i]['version']) == this.version) {
                             update = "";
                         }
-                        cards = cards + this.templates.card.format(MAC, MAC, MAC, MAC, update, name, MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC);
+                        cards += this.templates.card.render({
+                            update: update,
+                            name: name,
+                            MAC: MAC
+                        });
                     }
                 }
-                /*if(this.cluster.length > 0){
-                    var MAC = 'cluster';
-                    var name = 'Combined boards';
-                    cards = this.templates.card.format(MAC, MAC, MAC, MAC, name, MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC, MAC) + cards;
-                }*/
                 document.getElementById("grid").innerHTML = cards;
                 tools.updateMDL();
                 this.updateCards(response['own']);
@@ -132,49 +132,50 @@ class controlTemplates {
             <span class="mdl-button__ripple-container"><span class="mdl-ripple"></span></span></button>`;
 
         this.card = `<div class="demo-cards mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-grid mdl-grid--no-spacing">
-    <div class="demo-updates mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-cell--12-col-desktop">
-        <div id="{}" class="on mdl-card--expand mdl-color--teal-300"
-             style="background-image: url('img/off.jpg');"></div>
-        <button id="{}/error"
-                class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect"
-                data-upgraded=",MaterialButton,MaterialRipple" style="display: none; visibility: visible;">
+    <div
+        class="demo-updates mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-cell--12-col-desktop">
+        <div id="{{MAC}}" class="on mdl-card--expand mdl-color--teal-300" style="background-image: url('img/off.jpg');">
+        </div>
+        <button id="{{MAC}}/error"
+            class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect"
+            data-upgraded=",MaterialButton,MaterialRipple" style="display: none; visibility: visible;">
             <i class="material-icons">warning</i>Action has not been completed
             <span class="mdl-button__ripple-container"><span class="mdl-ripple"></span></span></button>
-        <button id="{}/on" class="mdl-button mdl-js-button mdl-button--raised mdl-button mdl-js-ripple-effect"
-                data-upgraded=",MaterialButton,MaterialRipple" style="display: none;">
+        <button id="{{MAC}}/on" class="mdl-button mdl-js-button mdl-button--raised mdl-button mdl-js-ripple-effect"
+            data-upgraded=",MaterialButton,MaterialRipple" style="display: none;">
             <i class="material-icons">offline_bolt</i> Keep on is enabled
             <span class="mdl-button__ripple-container"><span class="mdl-ripple"></span></span></button>
-        <button id="{}/done" class="mdl-button mdl-js-button mdl-button--raised mdl-button mdl-js-ripple-effect"
-                data-upgraded=",MaterialButton,MaterialRipple" style="display: inline; visibility: visible;">
+        <button id="{{MAC}}/done" class="mdl-button mdl-js-button mdl-button--raised mdl-button mdl-js-ripple-effect"
+            data-upgraded=",MaterialButton,MaterialRipple" style="display: inline; visibility: visible;">
             <i class="material-icons">done</i> Waiting for command
             <span class="mdl-button__ripple-container"><span class="mdl-ripple"></span></span></button>
-            
-        {}
 
-        <div class="mdl-card__supporting-text mdl-color-text--grey-600">{} ({})</div>
+        {{update}}
 
-        <div id="{}/waiting" style="display: none;">
+        <div class="mdl-card__supporting-text mdl-color-text--grey-600">{{name}} ({{MAC}})</div>
+
+        <div id="{{MAC}}/waiting" style="display: none;">
             <div class="mdl-card__supporting-text mdl-color-text--grey-600">
                 <center>
                     <bold>Waiting for response...</bold>
                 </center>
             </div>
             <div class="mdl-progress mdl-js-progress mdl-progress__indeterminate is-upgraded"
-                 data-upgraded=",MaterialProgress">
+                data-upgraded=",MaterialProgress">
                 <div class="progressbar bar bar1" style="width: 0%;"></div>
                 <div class="bufferbar bar bar2" style="width: 100%;"></div>
                 <div class="auxbar bar bar3" style="width: 0%;"></div>
             </div>
         </div>
 
-        <div id="{}/turning" style="display: none;">
+        <div id="{{MAC}}/turning" style="display: none;">
             <div class="mdl-card__supporting-text mdl-color-text--grey-600">
                 <center>
                     <bold>Working on it...</bold>
                 </center>
             </div>
             <div class="mdl-progress mdl-js-progress mdl-progress__indeterminate is-upgraded"
-                 data-upgraded=",MaterialProgress">
+                data-upgraded=",MaterialProgress">
                 <div class="progressbar bar bar1" style="width: 0%;"></div>
                 <div class="bufferbar bar bar2" style="width: 100%;"></div>
                 <div class="auxbar bar bar3" style="width: 0%;"></div>
@@ -182,35 +183,34 @@ class controlTemplates {
         </div>
 
         <div class="mdl-card__actions mdl-card--border mdl-typography--text-center">
-            <button onclick="active.action('{}','0')" class="mdl-button mdl-js-button mdl-button--primary">
+            <button onclick="active.action('{{MAC}}','0')" class="mdl-button mdl-js-button mdl-button--primary">
                 <i class="material-icons">power_settings_new</i></button>
 
-            <button style="right: 5px; position: absolute; display: inline-flex; vertical-align: middle;" id="menu_{}"
-                    class="mdl-button mdl-js-button mdl-button--icon">
+            <button style="right: 5px; position: absolute; display: inline-flex; vertical-align: middle;" id="menu_{{MAC}}"
+                class="mdl-button mdl-js-button mdl-button--icon">
                 <i class="material-icons">more_vert</i>
             </button>
 
-            <ul class="mdl-menu mdl-menu--top-right mdl-js-menu mdl-js-ripple-effect"
-                data-mdl-for="menu_{}">
+            <ul class="mdl-menu mdl-menu--top-right mdl-js-menu mdl-js-ripple-effect" data-mdl-for="menu_{{MAC}}">
                 <li class="mdl-menu__item mdl-js-ripple-effect" onclick="showDialog({
                 title: 'Are you sure?',
                 text: 'The board needs an active Internet connection and uninterrupted power<br><br><b>Remember</b> -> Reload the page to dismiss the update message',
                 positive: {
                 title: 'Yes',
                 onClick: function (e) {
-                active.action('{}', '8');
+                active.action('{{MAC}}', '8');
                 }
                 },
                 negative: {
                 title: 'No'
                 }
-                });" tabindex="-1"
+                });" tabindex="-1" data-upgraded=",MaterialRipple"><i class="material-icons"
+                        style="display: inline-flex; vertical-align: middle;">system_update</i>
+                    Update firmware<span class="mdl-menu__item-ripple-container"><span class="mdl-ripple"></span></span>
+                </li>
+                <li class="mdl-menu__item mdl-js-ripple-effect" onclick="active.action('{{MAC}}','9')" tabindex="-1"
                     data-upgraded=",MaterialRipple"><i class="material-icons"
-                                                       style="display: inline-flex; vertical-align: middle;">system_update</i>
-                    Update firmware<span class="mdl-menu__item-ripple-container"><span class="mdl-ripple"></span></span></li>
-                <li class="mdl-menu__item mdl-js-ripple-effect" onclick="active.action('{}','9')" tabindex="-1"
-                    data-upgraded=",MaterialRipple"><i class="material-icons"
-                                                       style="display: inline-flex; vertical-align: middle;">av_timer</i>
+                        style="display: inline-flex; vertical-align: middle;">av_timer</i>
                     Recovery<span class="mdl-menu__item-ripple-container"><span class="mdl-ripple"></span></span></li>
                 <li class="mdl-menu__item mdl-js-ripple-effect" onclick="showDialog({
                 title: 'Are you sure?',
@@ -218,14 +218,14 @@ class controlTemplates {
                 positive: {
                 title: 'Yes',
                 onClick: function (e) {
-                active.action('{}', '1');
+                active.action('{{MAC}}', '1');
                 }
                 },
                 negative: {
                 title: 'No'
                 }
                 });" tabindex="-1" data-upgraded=",MaterialRipple"><i class="material-icons"
-                                                                      style="display: inline-flex; vertical-align: middle;">stop</i>
+                        style="display: inline-flex; vertical-align: middle;">stop</i>
                     Force off<span class="mdl-menu__item-ripple-container"><span class="mdl-ripple"></span></span></li>
             </ul>
         </div>

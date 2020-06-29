@@ -15,11 +15,12 @@ class Manager {
                 for (var i = 0; i < boards.length; i++) {
                     var MAC = response['own'][i]['mac'];
                     var name = response['own'][i]['name'];
-                    /*var autoON = this.getTimeUTC(response['own'][i]['autoON']);
-                    var autoOFF = this.getTimeUTC(response['own'][i]['autoOFF']);*/
                     var shareWith = response['own'][i]['shareWith'];
-                    var cluster = (response['own'][i]['cluster'] == "1") ? 'checked' : '';
-                    cards = cards + this.templates.card.format(MAC, MAC, MAC, MAC, MAC, name, MAC, MAC, MAC, MAC, cluster, MAC, MAC, shareWith, MAC);
+                    cards += this.templates.card.render({
+                        MAC: MAC,
+                        name: name,
+                        shareWith: shareWith
+                    });
                 }
                 if (response['share'].length > 0) {
                     this.total = this.total + response['share'].length;
@@ -27,7 +28,10 @@ class Manager {
                     for (var i = 0; i < response['share'].length; i++) {
                         var MAC = response['share'][i]['mac'];
                         var name = response['share'][i]['name'];
-                        cards = cards + this.templates.shared.format(name, MAC, MAC);
+                        cards = cards + this.templates.shared.render({
+                            name: name,
+                            MAC: MAC
+                        });
                     }
                 }
                 document.getElementById("grid").innerHTML = cards + this.templates.divider.format('New board') + this.templates.newCard;
@@ -53,7 +57,7 @@ class Manager {
                     tools.snack("Failed!")
                 }
                 this.getCards();
-            }.bind(this), {'mac': mac, 'type': "8", 'name': name});
+            }.bind(this), { 'mac': mac, 'type': "8", 'name': name });
         } else {
             tools.snack("Wrong input");
         }
@@ -61,12 +65,12 @@ class Manager {
 
 
 
-    save(MAC){
+    save(MAC) {
         session.refresh();
         var name = document.getElementById(MAC + "_name");
         //var autoOFF = this.getMinutesUTC(document.getElementById(MAC + "_off").value);
         //var autoON = this.getMinutesUTC(document.getElementById(MAC + "_on").value);
-        var cluster = (document.getElementById(MAC + "_cluster").checked) ? '1': '0';
+        var cluster = (document.getElementById(MAC + "_cluster").checked) ? '1' : '0';
         var filter = /^([a-zA-Z0-9]{1,10})$/;
         if (!filter.test(name.value)) {
             tools.show(MAC + "_characters");
@@ -93,7 +97,7 @@ class Manager {
     checkShare() {
         var email = document.getElementById("email");
         var filter = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
-        if(email.value.length>0) {
+        if (email.value.length > 0) {
             if (!filter.test(email.value)) {
                 tools.show("valid");
                 tools.hide("save");
@@ -123,12 +127,12 @@ class Manager {
                 positive: {
                     title: '<h style="color:green;">Share</h>',
                     id: 'save',
-                    onClick: function() {active.share(MAC, old,true);}
+                    onClick: function () { active.share(MAC, old, true); }
                 },
                 negative: {
                     title: '<h style="color:red;" disabled>Cancel</h>'
                 },
-                onLoaded: function() {
+                onLoaded: function () {
                     tools.hide("save");
                 }
             });
@@ -136,32 +140,32 @@ class Manager {
             var email = document.getElementById("email").value;
             tools.hideDiag();
             tools.showLoading();
-            tools.req('/manager/change', function (status, response){
-                if(status === 200){
+            tools.req('/manager/change', function (status, response) {
+                if (status === 200) {
                     tools.snack("Done");
                     this.getCards();
                 } else {
                     tools.hideDiag();
                     tools.snack("Failed!");
                 }
-            }.bind(this), {"type":"1", "email": tools.encodeSTR(email), "mac": MAC});
+            }.bind(this), { "type": "1", "email": tools.encodeSTR(email), "mac": MAC });
         }
     }
 
-    removeShare(MAC, force){
+    removeShare(MAC, force) {
         session.refresh();
-        if(force) {
-            tools.req('/manager/change', function (status, response){
+        if (force) {
+            tools.req('/manager/change', function (status, response) {
                 tools.hideDiag();
-                if(status === 200){
+                if (status === 200) {
                     tools.snack("Done");
                     this.getCards();
                 } else {
                     tools.snack("Failed!");
                 }
-            }.bind(this), {"type": "1", "email": "", "mac": MAC});
+            }.bind(this), { "type": "1", "email": "", "mac": MAC });
         } else {
-            if(this.total !== 1 || confirm("Removing the last board will delete this account! Are you sure?")) {
+            if (this.total !== 1 || confirm("Removing the last board will delete this account! Are you sure?")) {
                 showDialog({
                     title: `<h3 class="mdl-dialog__title" style="width:100%">Are you sure?</h3>`,
                     text: `<br><center>Shared boards can't be added by user</center><br>`,
@@ -175,7 +179,7 @@ class Manager {
                         }
                     },
                     cancelable: true,
-                    contentStyle: {'max-width': '300px'},
+                    contentStyle: { 'max-width': '300px' },
                 });
             }
         }
@@ -183,18 +187,18 @@ class Manager {
 
     remove(MAC, force) {
         session.refresh();
-        if(force) {
-            tools.req('/manager/change', function(status, response){
+        if (force) {
+            tools.req('/manager/change', function (status, response) {
                 tools.hideDiag();
-                if(status === 200){
+                if (status === 200) {
                     tools.snack("Done");
                     this.getCards();
                 } else {
                     tools.snack("Failed!");
                 }
-            }.bind(this),{'mac': MAC, 'type': "9"});
+            }.bind(this), { 'mac': MAC, 'type': "9" });
         } else {
-            if(this.total !== 1 || confirm("Removing the last board will delete this account! Are you sure?")) {
+            if (this.total !== 1 || confirm("Removing the last board will delete this account! Are you sure?")) {
                 showDialog({
                     title: '<h3 class="mdl-dialog__title" style="width:100%">Are you sure?</h3>',
                     text: '<br>',
@@ -208,7 +212,7 @@ class Manager {
                         }
                     },
                     cancelable: true,
-                    contentStyle: {'max-width': '300px'},
+                    contentStyle: { 'max-width': '300px' },
                 });
             }
         }
@@ -217,8 +221,8 @@ class Manager {
 
 
 
-class managerTemplates{
-    constructor(){
+class managerTemplates {
+    constructor() {
         this.divider = `
 <div class="mdl-cell mdl-cell--12-col">
 <div class="hr-sect"><span class="mdl-layout-title">{}</span></div>
@@ -226,37 +230,33 @@ class managerTemplates{
   `;
 
         this.card = `<div class="demo-cards mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-grid mdl-grid--no-spacing">
-  <div class="demo-updates mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-cell--12-col-desktop">
+  <div
+    class="demo-updates mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-cell--12-col-desktop">
     <div class="on mdl-card--expand mdl-color--teal-300"></div>
-    <div class="mdl-card__supporting-text mdl-color-text--grey-900">{}</div>
-    <div class="popup" style="width:100%" onclick="document.getElementById('{}_characters').style.display = 'none';">
-      <span class="popuptext" id="{}_characters">- 8-20 characters<br>- Only letters and numbers</span></div>
-    <div class="popup" style="width:100%" onclick="document.getElementById('{}_old').style.display = 'none';">
-      <span class="popuptext" id="{}_old">Please use a new name</span></div>
+    <div class="mdl-card__supporting-text mdl-color-text--grey-900">{{MAC}}</div>
+    <div class="popup" style="width:100%"
+      onclick="document.getElementById('{{MAC}}_characters').style.display = 'none';">
+      <span class="popuptext" id="{{MAC}}_characters">- 8-20 characters<br>- Only letters and numbers</span></div>
+    <div class="popup" style="width:100%" onclick="document.getElementById('{{MAC}}_old').style.display = 'none';">
+      <span class="popuptext" id="{{MAC}}_old">Please use a new name</span></div>
     <div style="margin:0 auto;"
-         class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label is-dirty is-upgraded"
-         data-upgraded=",MaterialTextfield">
-      <input class="mdl-textfield__input" type="text" name="name" value="{}" id="{}_name">
-      <label class="mdl-textfield__label" for="{}_name" style="color:#00bcd4;">Change name:</label>
+      class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label is-dirty is-upgraded"
+      data-upgraded=",MaterialTextfield">
+      <input class="mdl-textfield__input" type="text" name="name" value="{{name}}" id="{{MAC}}_name">
+      <label class="mdl-textfield__label" for="{{MAC}}_name" style="color:#00bcd4;">Change name:</label>
     </div>
-    <div style="margin: 0 auto; margin-bottom: 15px;">
-<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="{}_cluster" style="display: none;">
-  <input type="checkbox" id="{}_cluster" class="mdl-switch__input" {}>
-  <span class="mdl-switch__label">Cluster (combine boards)</span>
-</label>
-</div>
     <div class="mdl-card__actions mdl-card--border">
       <center>
-        <button href="#" class="mdl-button mdl-js-button mdl-js-ripple-effect" onclick="active.save('{}')"
-                style="color: #00bcd4;" data-upgraded=",MaterialButton,MaterialRipple">
+        <button href="#" class="mdl-button mdl-js-button mdl-js-ripple-effect" onclick="active.save('{{MAC}}')"
+          style="color: #00bcd4;" data-upgraded=",MaterialButton,MaterialRipple">
           Save
           <span class="mdl-button__ripple-container"><span class="mdl-ripple"></span></span></button>
-        <button class="mdl-button mdl-js-button" style="color:#3CB92A;" onclick="active.share('{}', '{}');"
-                data-upgraded=",MaterialButton">
+        <button class="mdl-button mdl-js-button" style="color:#3CB92A;" onclick="active.share('{{MAC}}', '{{shareWith}}');"
+          data-upgraded=",MaterialButton">
           <i class="material-icons">share</i>
         </button>
-        <button class="mdl-button mdl-js-button" style="color:red;" onclick="active.remove('{}');"
-                data-upgraded=",MaterialButton">
+        <button class="mdl-button mdl-js-button" style="color:red;" onclick="active.remove('{{MAC}}');"
+          data-upgraded=",MaterialButton">
           Remove
         </button>
       </center>
@@ -265,16 +265,18 @@ class managerTemplates{
 </div>`;
 
         this.shared = `<div class="demo-cards mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-grid mdl-grid--no-spacing">
-    <div class="demo-updates mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-cell--12-col-desktop">
+    <div
+        class="demo-updates mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-cell--12-col-desktop">
         <div class="on mdl-card--expand mdl-color--teal-300"> </div>
-        <div class="mdl-card__supporting-text mdl-color-text--grey-900">{} ({})</div>
+        <div class="mdl-card__supporting-text mdl-color-text--grey-900">{{name}} ({{MAC}})</div>
         </center>
         <div class="mdl-card__actions mdl-card--border">
-        <center>
-            <button class="mdl-button mdl-js-button" style="color:red;" onclick="active.removeShare('{}');" data-upgraded=",MaterialButton">
-            Remove
-            </button>
-        </center>
+            <center>
+                <button class="mdl-button mdl-js-button" style="color:red;" onclick="active.removeShare('{{MAC}}');"
+                    data-upgraded=",MaterialButton">
+                    Remove
+                </button>
+            </center>
         </div>
     </div>
 </div>`;
