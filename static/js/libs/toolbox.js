@@ -339,3 +339,15 @@ String.prototype.format = function () {
         return typeof args[i] != 'undefined' ? args[i++] : '';
     });
 };
+
+String.prototype.render = function (args) {
+    var reg = "";
+    Object.keys(args).forEach(n => {
+        reg += (reg != "" ? "|" : "") + "{{" + n + "}}";
+    });
+    var re = new RegExp(reg, "gi");
+    return this.replace(re, function (match) {
+        var str = args[match.substring(2, match.length - 2)];
+        return str != null ? str : "";
+    });
+};

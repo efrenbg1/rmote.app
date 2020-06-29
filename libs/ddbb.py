@@ -1,20 +1,100 @@
 import pymysql as mysql
-from DBUtils.PersistentDB import PersistentDB
+from DBUtils.PooledDB import PooledDB
 from flask import Flask, g, request
-import redis
 import warnings
 from libs import ddbb, password
+import socket
+import ssl
+import threading
+import json
+from pathlib import Path
+import shelve
+import select
 
-host = "127.0.0.1"
-warnings.filterwarnings('ignore', category=mysql.Warning)
-sessions = redis.Redis(host=host, port=6379, db=0, decode_responses=True)
-users = redis.Redis(host=host, port=6379, db=1, decode_responses=True)
-acls = redis.Redis(host=host, port=6379, db=2, decode_responses=True)
-topics = redis.Redis(host=host, port=6379, db=3, decode_responses=True)
+
+class SettingsDB:
+    def __init__(self, host, user, pw, db, broker):
+        self.host = host
+        self.user = user
+        self.pw = pw
+        self.db = db
+        self.broker = broker
+
+
+settings = SettingsDB("127.0.0.1", "root", "", "rmote", "127.0.0.1")
+
+with open('settings.json', "r") as f:
+    param = json.load(f)
+    settings.host = param['host']
+    settings.user = param['user']
+    settings.pw = param['pw']
+    settings.db = param['db']
+    settings.broker = param['broker']
+
+s = None
+broker = None
+lbroker = threading.Lock()
+
+Path("db").mkdir(parents=True, exist_ok=True)
+sessions = shelve.open('db/sessions', writeback=True)
+lsessions = threading.Lock()
+
+
+def len2(string):
+    return str(len(string)).zfill(2)
+
+
+def publish(topic, slot, message):
+    global broker, lbroker, s
+    try:
+        with lbroker:
+            broker.send(str.encode(
+            "MQS6" + len2(topic) + topic + str(slot) + len2(message) + message + '\n'))
+    except Exception:
+        with lbroker:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.settimeout(10)  
+            broker = ssl.wrap_socket(s)
+            broker.connect((settings.broker, 2443))
+            broker.send(str.encode(
+            "MQS6" + len2(topic) + topic + str(slot) + len2(message) + message + '\n'))
+
+
+def retrieve(topic, slot):
+    global broker, lbroker, s
+    rx = "MQS7\n"
+    try:
+        with lbroker:
+            broker.send(str.encode(
+                "MQS7" + len2(topic) + topic + str(slot) + '\n'))
+            ready = select.select([broker], [], [], 1)
+            if ready[0]:
+                rx = broker.recv(210)
+    except Exception:
+        with lbroker:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.settimeout(10)
+            broker = ssl.wrap_socket(s)
+            broker.connect((settings.broker, 2443))
+            broker.send(str.encode(
+                "MQS7" + len2(topic) + topic + str(slot) + '\n'))
+            ready = select.select([broker], [], [], 1)
+            if ready[0]:
+                rx = broker.recv(210)
+    finally:
+        if isinstance(rx, str):
+            raise Exception("Timed out while waiting for response! Is broker up?")
+        rx = rx.decode("utf-8")
+        if len(rx) < 4:
+            return None
+        if rx[:4] == "MQS7":
+            return None
+        if rx[:4] == "MQS2":
+            return rx[6:6+int(rx[4:6])]
 
 
 def connect_db():
-    return PersistentDB(creator=mysql, user='web', password='SuperPowers4All', host=host, database='rmote')
+    return PooledDB(creator=mysql, user=settings.user, password=settings.pw, host=settings.host, database=settings.db)
 
 
 app = Flask(__name__)
@@ -28,20 +108,11 @@ def checkPW(user, pw):
 
 
 def inAcls(user, mac):
-    macs = acls.smembers(user)
-    if mac not in macs:
-        list = query("(SELECT mac FROM acls WHERE user=(SELECT id FROM user WHERE username=%s)) UNION (SELECT acls.mac FROM acls, share WHERE share.user=(SELECT id FROM user WHERE username=%s) AND share.mac=acls.mac)", user, user)
-        if list is not None:
-            acls.delete(user)
-            for i in range(len(list)):
-                acls.sadd(user, list[i][0])
-            if mac in acls.smembers(user):
-                return True
-    else:
-        return True
+    acls = query("SELECT a.mac FROM acls AS a LEFT JOIN share AS s ON a.mac=s.mac WHERE a.user=(SELECT id FROM user WHERE username=%s) OR s.user=(SELECT id FROM user WHERE username=%s)", user, user)
+    for r in acls:
+        if r[0] == mac:
+            return True
     return False
-
-# Function to get the database
 
 
 def get_db():
