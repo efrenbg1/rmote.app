@@ -41,8 +41,10 @@ class Toolbox {
         clearTimeout(this.uReqTimer);
         if (!session.check()) {
             this.sClose();
+            session.showLogIn('message-square', 'LogIn to continue', 'alert-info');
             return;
         }
+        this.timeoutLoading();
         if (this.socket == null || this.socket.disconnected) {
             this.callback.push(function () {
                 tools.sreq(event, callback, headers);
@@ -51,6 +53,7 @@ class Toolbox {
             return;
         }
         this.socket.emit(event, headers, function (response, status) {
+            this.hideLoading();
             if (typeof status != "number") status = 200;
             callback(status, response);
         }.bind(this));
@@ -136,89 +139,89 @@ class Toolbox {
     }
 
 
-    //////// MODALS ////////
+    //// MESSAGES ////
 
-    showLogIn(msg) {
-        clearInterval(tools.interval);
-        document.getElementById("obfuscator").classList.add('is-visible');
-        showDialog({
-            text: session.templates.login().format(msg),
-            cancelable: false,
-            onLoaded: function () {
-                //updateMDL();
-            },
-        });
-        window.addEventListener('keydown', this.enter, false);
-    }
-
-    showLoading(msg) {
-        var html = `<div style="text-align: center;">
-        <br>
-        <span class="mdl-layout-title" style="color: #757575;">Loading {}...</span>
-        <p></p>
-        <br>
-        <div class="mdl-spinner mdl-js-spinner is-active" style=" width: 80px;height: 80px;">
-        </div>
-</div>
-<p></p>`;
-        showDialog({
-            text: html.format(msg),
-            cancelable: true,
-            onHidden: function () {
-                if (!session.check()) {
-                    tools.showLogIn('Session expired', '');
-                }
-            },
-        });
-    }
-
-    // TODO comprobar si se puede usar en algún sitio
-    showFailed() {
-        var html = `<div style="text-align: center;"><br>
-        <button class="mdl-button mdl-js-button mdl-button--primary">
-                <i class="material-icons">announcement</i> Failed to load page
-        </button></center><br>
-        <p></p><br>
-        <img src="/img/sad.jpg" style="max-width:50%;max-height:50%;">
-        <p></p><br>
-        <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" onclick="location.reload();">
-                <i class="material-icons">autorenew</i> Press to retry
-        </button>
-        <p></p><br>
-</div>`;
-        showDialog({
-            text: html,
-            cancelable: false
-        });
-    }
-
-    hideDiag() {
-        try {
-            document.getElementById("orrsDiag").remove();
-        } catch (e) {
-            console.log(e);
+    alert(title, icon, type) {
+        $('#alertImg')[0].src = "/img/405_{}.png".format(Math.floor(Math.random() * 2) + 1);
+        var text = $('#alertText')[0];
+        if (type == undefined) {
+            text.setAttribute("class", 'mb-0 alert alert-danger');
+        } else {
+            text.setAttribute("class", 'mb-0 alert alert-{}'.format(type));
         }
+        text.innerHTML = `<i data-feather="{}" class="rounded mr-1 inline-feather"></i>&nbsp;{}`.format(icon ? icon : 'alert-triangle', title);
+        feather.replace();
+        this.showModal('alert');
     }
 
-    snack(msg) {
-        (function () {
-            'use strict';
-            var snackbarContainer = document.querySelector('#demo-toast-example');
-            setTimeout(function () {
-                snackbarContainer.MaterialSnackbar.showSnackbar({ message: msg });
-            }, 500);
-        }())
+    showModal(name) {
+        $('#grid').removeAttr("class");
+        $("#{}".format(name)).modal('show');
+    }
+
+    hideModal(name) {
+        $("#" + name).modal("hide");
+    }
+
+    showFailure(code) {
+        document.getElementById(
+            "toastContent"
+        ).innerHTML = `<i data-feather="alert-triangle" class="rounded mr-1 inline-feather" color="red"></i>
+            <strong class="mr-auto" style="color:red;">Error al ejecutar la acción&nbsp;({})</strong>`.format(
+            code
+        );
+        $("#toast").toast({ delay: 6000 });
+        $("#toast").toast("show");
+        feather.replace();
+    }
+
+    showWarning(msg) {
+        document.getElementById(
+            "toastContent"
+        ).innerHTML = `<i data-feather="info" class="rounded mr-1 inline-feather text-muted"></i>
+            <strong class="mr-auto text-muted">{}</strong>`.format(msg);
+        $("#toast").toast({ delay: 6000 });
+        $("#toast").toast("show");
+        feather.replace();
+    }
+
+    showSuccess() {
+        document.getElementById(
+            "toastContent"
+        ).innerHTML = `<i data-feather="check" class="rounded mr-1 inline-feather" color="green"></i>
+            <strong class="mr-auto">Guardado correctamente</strong>`;
+        $("#toast").toast({ delay: 6000 });
+        $("#toast").toast("show");
+        feather.replace();
+    }
+
+    showLoading() {
+        $("#loading").modal({
+            backdrop: "static",
+            keyboard: false
+        });
+    }
+
+    timeoutLoading() {
+        this.hideLoading();
+        this.loading = window.setTimeout(
+            function () {
+                $("#loading").modal({
+                    backdrop: "static",
+                    keyboard: false
+                });
+            }.bind(this),
+            500
+        );
+    }
+
+    hideLoading() {
+        clearTimeout(this.loading);
+        this.hideModal("loading");
     }
 
 
     //////// DOM ////////
-
-    // TODO replace component handler everywhere
-    updateMDL() {
-        if (!(typeof (componentHandler) == 'undefined')) {
-            componentHandler.upgradeAllRegistered();
-        }
-    }
 
     /**
     * Checks if an id corresponds to an element and shows it. Otherwise, the application warns about it
@@ -247,6 +250,26 @@ class Toolbox {
         }
     }
 
+    draw(html, callback) {
+        var elapsed = performance.now() - this.animationTime;
+        if (elapsed < 100) {
+            setTimeout(function () {
+                $('#grid')[0].innerHTML = html;
+                if (callback != undefined) callback();
+                if (tools.animationCallback != null) tools.animationCallback();
+                tools.animationCallback = null;
+                feather.replace();
+                $('#grid')[0].setAttribute('class', 'slide-in');
+            }, 100 - elapsed);
+        } else {
+            $('#grid')[0].innerHTML = html;
+            if (callback != undefined) callback();
+            if (tools.animationCallback != null) tools.animationCallback();
+            tools.animationCallback = null;
+            feather.replace();
+            $('#grid')[0].setAttribute('class', 'slide-in');
+        }
+    }
 
 
 
@@ -287,55 +310,8 @@ class Toolbox {
             document.cookie = name + "=" + data + "; expires=" + d.toUTCString();
         }
     }
-
-    /*
-       getMinutesUTC(time) {
-           var filter = /^(0[0-9]|1[0-9]|2[0-3]|[0-9]):[0-5][0-9]$/;
-           try {
-               if (!filter.test(time)) {
-                   return null;
-               }
-               var offset = new Date().getTimezoneOffset();
-               var off = time.split(':');
-               var minutes = (+off[0]) * 60 + (+off[1]);
-               return minutes + offset;
-           } catch (error) {
-               console.log(error);
-               return null;
-           }
-       }
-   
-       getTimeUTC(time) {
-           if (time === "null") {
-               return "";
-           }
-           var offset = new Date().getTimezoneOffset();
-           time = parseInt(time) - offset;
-           var hours = Math.floor(time / 60);
-           if (hours < 10) {
-               hours = "0" + hours.toString()
-           }
-           var minutes = time % 60;
-           if (minutes < 10) {
-               minutes = "0" + minutes.toString()
-           }
-           return "{}:{}".format(hours, minutes);
-       }
-       */
 }
 
-
-Element.prototype.remove = function () {
-    this.parentElement.removeChild(this);
-};
-
-NodeList.prototype.remove = HTMLCollection.prototype.remove = function () {
-    for (var i = this.length - 1; i >= 0; i--) {
-        if (this[i] && this[i].parentElement) {
-            this[i].parentElement.removeChild(this[i]);
-        }
-    }
-};
 
 String.prototype.format = function () {
     var i = 0, args = arguments;

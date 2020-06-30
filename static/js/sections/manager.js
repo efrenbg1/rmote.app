@@ -1,44 +1,40 @@
 class Manager {
     constructor() {
         this.templates = new managerTemplates();
-        this.getCards();
     }
 
-    getCards() {
-        tools.showLoading("boards manager");
-        tools.req('/manager/list', function (status, response) {
-            tools.hideDiag();
-            if (status === 200) {
-                var cards = "";
-                var boards = Object.keys(response['own']);
-                this.total = boards.length;
-                for (var i = 0; i < boards.length; i++) {
-                    var MAC = response['own'][i]['mac'];
-                    var name = response['own'][i]['name'];
-                    var shareWith = response['own'][i]['shareWith'];
-                    cards += this.templates.card.render({
-                        MAC: MAC,
+    list() {
+        tools.sreq('/manager/list', function (status, response) {
+            if (status != 200) {
+                // TODO mostrar modal error
+            }
+            var cards = "";
+            var boards = Object.keys(response['own']);
+            this.total = boards.length;
+            for (var i = 0; i < boards.length; i++) {
+                var MAC = response['own'][i]['mac'];
+                var name = response['own'][i]['name'];
+                var shareWith = response['own'][i]['shareWith'];
+                cards += this.templates.card.render({
+                    MAC: MAC,
+                    name: name,
+                    shareWith: shareWith
+                });
+            }
+            if (response['share'].length > 0) {
+                this.total = this.total + response['share'].length;
+                var cards = cards + this.templates.divider.format('Shared');
+                for (var i = 0; i < response['share'].length; i++) {
+                    var MAC = response['share'][i]['mac'];
+                    var name = response['share'][i]['name'];
+                    cards = cards + this.templates.shared.render({
                         name: name,
-                        shareWith: shareWith
+                        MAC: MAC
                     });
                 }
-                if (response['share'].length > 0) {
-                    this.total = this.total + response['share'].length;
-                    var cards = cards + this.templates.divider.format('Shared');
-                    for (var i = 0; i < response['share'].length; i++) {
-                        var MAC = response['share'][i]['mac'];
-                        var name = response['share'][i]['name'];
-                        cards = cards + this.templates.shared.render({
-                            name: name,
-                            MAC: MAC
-                        });
-                    }
-                }
-                document.getElementById("grid").innerHTML = cards + this.templates.divider.format('New board') + this.templates.newCard;
-                componentHandler.upgradeAllRegistered();
-            } else {
-                session.logOut();
             }
+            document.getElementById("grid").innerHTML = cards + this.templates.divider.format('New board') + this.templates.newCard;
+            componentHandler.upgradeAllRegistered();
         }.bind(this));
     }
 
@@ -49,7 +45,7 @@ class Manager {
         var filter = /^([a-zA-Z0-9]{1,10})$/;
         var re = /^(([A-Fa-f0-9]{2}[:]){5}[A-Fa-f0-9]{2}[,]?)+$/;
         if (filter.test(name) && re.test(mac)) {
-            tools.req('/manager/change', function (status, response) {
+            tools.sreq('/manager/change', function (status, response) {
                 if (status === 200) {
                     tools.snack("Done");
                     this.getCards();
@@ -62,8 +58,6 @@ class Manager {
             tools.snack("Wrong input");
         }
     }
-
-
 
     save(MAC) {
         session.refresh();
@@ -303,3 +297,13 @@ class managerTemplates {
     </div>`
     }
 }
+
+
+var manager = new Manager();
+nav.modules["manager"] = {
+    class: function () {
+        return manager;
+    },
+    icon: "edit",
+    name: "Boards manager"
+};

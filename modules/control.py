@@ -30,6 +30,7 @@ def controlList(h):
                 {'mac': secondary[i][0], 'name': secondary[i][1], 'status': status, 'action': action, 'version': version})
     if len(response['own']) == 0 and len(response['share']) == 0:
         ddbb.query("DELETE FROM user WHERE username=%s", user)
+        # TODO desconectar cliente (casi que mejor ponerlo en login)
         return "401 (Unauthorized)", 401
     return response
 
@@ -49,15 +50,10 @@ def controlUpdate(h):
 
 @socketio.on('/control/action')
 def controlAction(h):
-    if sessions.check(request.cookies):
-        try:
-            user = request.cookies.get('Username')
-            mac = request.headers.get('mac')
-            payload = request.headers.get('payload')
-            if ddbb.inAcls(user, mac) and len(payload) == 1:
-                ddbb.publish(mac, 1, payload)
-                return str(json.dumps({'Done': '1'}))
-        except Exception as e:
-            print(e)
-            pass
-    return "401 (Unauthorized)", 401
+    user = request.cookies.get('Username')
+    mac = h.get('mac')
+    payload = h.get('payload')
+    if ddbb.inAcls(user, mac) and len(payload) == 1:
+        ddbb.publish(mac, 1, payload)
+        return {'Done': '1'}
+    return "403 (Forbidden)", 403

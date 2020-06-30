@@ -2,85 +2,389 @@
 <html lang="en">
 
 <head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="description" content="Web app for controlling lemonSW boards.">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
-  <title>LemonSW dashboard</title>
-  <link rel="apple-touch-icon" sizes="180x180" href="icon/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/icon/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/icon/favicon-16x16.png">
-  <link rel="manifest" href="/icon/site.webmanifest">
-  <link rel="mask-icon" href="/icon/safari-pinned-tab.svg" color="#5bbad5">
-  <meta name="msapplication-TileColor" content="#ffc40d">
-  <meta name="theme-color" content="#ffffff">
-
-  <link rel="stylesheet" href="/css/material.css">
-  <link rel="stylesheet" href="/css/index.css">
-  <link rel="stylesheet" href="/css/modal.css">
-  <link rel="stylesheet" href="/css/login.css">
-
+    <meta charset="UTF-8">
+    <title>LemonSW dashboard</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="/logo/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/logo/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/logo/favicon-16x16.png">
+    <link rel="mask-icon" href="/logo/safari-pinned-tab.svg" color="#e05200">
+    <link rel="manifest" href="/site.webmanifest">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Management tool for construction companies" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link rel="stylesheet" type="text/css" href="/css/index.css?hash={% if hash %}{{ hash }}{% endif %}">
+    <link rel="stylesheet" type="text/css" href="/css/animation.css?hash={% if hash %}{{ hash }}{% endif %}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+        integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
 </head>
 
 <body>
-  <main class="demo-layout mdl-layout mdl-js-layout mdl-layout--fixed-drawer mdl-layout--fixed-header">
-    <header class="demo-header mdl-layout__header mdl-color--grey-100 mdl-color-text--grey-600">
-      <div class="mdl-layout__header-row"> <span id="title" class="mdl-layout-title">Control center</span>
-        <div class="mdl-layout-spacer"></div>
-        <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon" onclick="session.logOut()"
-          name="LogOut"> <i class="material-icons">exit_to_app</i> </button>
-      </div>
-    </header>
-    <div class="demo-drawer mdl-layout__drawer mdl-color--blue-grey-900 mdl-color-text--blue-grey-50">
-      <header class="demo-drawer-header"> <img src="img/user2.png" class="demo-avatar">
-        <div class="demo-avatar-dropdown"> <span id="username">Default</span>
-          <div class="mdl-layout-spacer"></div>
-        </div>
-      </header>
-      <nav class="demo-navigation mdl-navigation mdl-color--blue-grey-800">
-        <a class="mdl-navigation__link selected mdl-color-text--blue-grey-800" id="control"
-          onclick="section.select('control')">
-          <i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">control_camera</i>Control</a>
-        <a class="mdl-navigation__link" id="manager" onclick="section.select('manager')">
-          <i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">dns</i>Boards manager</a>
-        <a class="mdl-navigation__link" id="settings" onclick="section.select('settings')">
-          <i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">settings</i>Settings</a>
-        <div class="mdl-layout-spacer"></div>
-        <a class="mdl-navigation__link" onclick="location.href='http://kck.st/2Z84RTn';"><i
-            class="mdl-color-text--blue-grey-400 material-icons" role="presentation">help_outline</i>About<span
-            class="visuallyhidden">Help</span></a>
-      </nav>
-    </div>
-    <main class="mdl-layout__content mdl-color--grey-100">
-      <div class="mdl-grid demo-content" id="grid">
+    <div class="container-fluid p-0">
+        <div class="row no-pad">
+            <div class="col-2 mobile-bar" id="navbar">
+                <nav class="sidebar">
+                    <div class="sidebar-sticky border-right">
+                        <div class="logo"></div>
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <span class="fake-link nav-link active mt-2" onclick="nav.load('control')" id="control">
+                                    <i data-feather="sliders"></i>
+                                    Control
+                                </span>
+                            </li>
+                            <li class="nav-item">
+                                <span class="fake-link nav-link mt-2" onclick="nav.load('manager')" id="manager">
+                                    <i data-feather="edit"></i>
+                                    Manager
+                                </span>
+                            </li>
+                            <li class="nav-item">
+                                <span class="fake-link nav-link mt-2" onclick="nav.load('settings')" id="settings">
+                                    <i data-feather="settings"></i>
+                                    Settings
+                                </span>
+                            </li>
+                            <span class="align-bottom" style="width: 100%;">
+                                <li class="nav-item">
+                                    <span class="fake-link nav-link mt-4" onclick="session.LogOut()" id="logout">
+                                        <i data-feather="log-out"></i>
+                                        Log out
+                                    </span>
+                                </li>
+                                <li class="nav-item">
+                                    <span class="fake-link nav-link mt-1"
+                                        onclick="location.href='http://kck.st/2Z84RTn';">
+                                        <i data-feather="info"></i>
+                                        About
+                                    </span>
+                                </li>
+                                <h6
+                                    class="sidebar-heading d-flex justify-content-center align-items-center mb-3 mt-3 text-muted">
+                                    <small>Version:&nbsp;<a
+                                            href="javascript:">{% if hash %}{{ hash }}{% else %}error{% endif %}</a></small>
+                                </h6>
+                            </span>
+                        </ul>
+                    </div>
+                </nav>
+            </div>
+            <div class="col-6 mobile-blank" id="blank">
+                <button type="button" class="block" onclick="tools.hideNavbar()">Close menu</button>
+            </div>
+            <div class="col" id="content">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-sm">
+                            <nav class="navbar no-margin">
+                                <div class="d-flex justify-content-start my-2">
+                                    <div class="mobile-button" id="menu-button">
+                                        <button type="button" class="btn btn-light mr-2" onclick="tools.showNavbar()"><i
+                                                data-feather="menu"></i></button>
+                                    </div>
+                                    <a class="navbar-brand ml-2 m-0" href="javascript:" id=title></a>
+                                </div>
+                            </nav>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm">
+                            <hr class="divider mt-0">
+                        </div>
+                    </div>
 
-      </div>
-      <div id="demo-toast-example" class="mdl-js-snackbar mdl-snackbar">
-        <div class="mdl-snackbar__text"></div>
-        <button class="mdl-snackbar__action" type="button"></button>
-      </div>
-    </main>
-    <div class="mdl-layout__obfuscator" id="obfuscator"></div>
-  </main>
+                    <div class="row">
+                        <div class="col-sm">
+                            <div id="grid">
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div aria-live="polite" aria-atomic="true" class="d-flex justify-content-center align-items-center toast-bottom">
+        <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" id="toast">
+            <div class="toast-header">
+                <div id="toastContent"></div>
+                <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal" id="login" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true"
+        data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="mt-4">
+                        <img alt="Logo" src="/icon/android-chrome-192x192.png" width="170">
+                    </div>
+                    <div class="" role="alert" id="login_msg">
+                    </div>
+                    <form class="mt-3">
+                        <div class="form-group">
+                            <input type="text" class="form-control" aria-describedby="emailHelp" placeholder="e-mail"
+                                id="user" aria-labelledby="help">
+                            <small id="help" class="form-text text-muted">Input the e-mail address you've used to sign
+                                up.
+                            </small>
+                        </div>
+                        <div class="form-group">
+                            <input type="password" class="form-control" placeholder="Password" id="pw"
+                                title="Contraseña de la cuenta, normalmente la misma que el correo electrónico">
+                        </div>
+                        <div class="text-center">
+                            <button type="button" class="btn btn-primary mt-3 mb-2" onclick="session.LogIn()"
+                                title="LogIn"><i data-feather="log-in"></i>&nbsp;LogIn</button>
+                        </div>
+                        <h6
+                            class="sidebar-heading d-flex justify-content-center align-items-center mb-3 mt-3 text-muted">
+                            <small>Not registered?&nbsp;<a href="javascript:">Create an account</a></small>
+                        </h6>
+                    </form>
+                    <hr class="divider mt-4 mb-3">
+                    <div class="text-center">
+                        <h5>Don't have a board?</h5>
+                        <p>Boards can be purchased via PayPal</p>
+                        <button type="button" class="btn btn-warning"><i data-feather="shopping-cart"></i>&nbsp;Buy
+                            now</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" tabindex="-1" role="dialog" id="loading">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="text-center">
+                        <div class="my-5" style="font-size: 2rem;">Loading...</div>
+                        <div class="my-5">
+                            <div class="spinner-border text-warning" style="width: 5rem; height: 5rem;" role="status">
+                                <span class="sr-only">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" tabindex="-1" role="dialog" id="logging">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="text-center">
+                        <div class="my-5" style="font-size: 2rem;">Logging in...</div>
+                        <div class="my-5">
+                            <div class="spinner-border text-warning" style="width: 5rem; height: 5rem;" role="status">
+                                <span class="sr-only">Logging in...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="unsaved" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <form>
+                        <div class="mt-3 mb-5 text-center">
+                            <h3>¿Quiere descartar los cambios?</h3>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2 mx-2">
+                            <button type="button" class="btn btn-outline-danger" data-dismiss="modal"
+                                onclick="nav.force=true;window.history.go(-nav.steps);"><i
+                                    data-feather="trash-2"></i>&nbsp;Descartar
+                            </button>
+                            <button type="button" class="btn btn-outline-success" data-dismiss="modal"><i
+                                    data-feather="corner-down-right"></i>&nbsp;Volver</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="offline" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mt-3 mb-5 text-center">
+                            <img alt="404" src="/img/404.png" height="300" width="300">
+                            <h3><b>¡No Internet connection!</b></h3>
+                        </div>
+                        <div class="text-center mb-2">
+                            <button type=button class="btn btn-outline-secondary" data-dismiss="modal"
+                                onclick="nav.reconstruct()">
+                                <center><img alt="Recargar la página" src="/img/refresh.svg" height="30" width="30"
+                                        class="m-0"></center>Retry
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="update" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <form>
+                        <div class="mt-3 mb-5 text-center">
+                            <img alt="205" src="/img/205.png" height="300" width="300">
+                            <h3><b>¡Update available!</b></h3>
+                        </div>
+                        <div class="text-center mb-2">
+                            <button type=button class="btn btn-outline-secondary" data-dismiss="modal"
+                                onclick="location.reload()">
+                                <center><img alt="Recargar la página" src="/img/refresh.svg" height="30" width="30"
+                                        class="m-0"></center>Update
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="error" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mt-3 mb-5 text-center">
+                            <img alt="Error" src="/img/error.png" height="300" width="300">
+                            <h3><b>Se ha producido un error desconocido</b></h3>
+                            <h5><small>El error ha quedado registrado y se solucionará lo antes posible. Si el error
+                                    persiste, por favor contacte con el administrador del sitio.</small></h5>
+                        </div>
+                        <div class="text-center mb-2">
+                            <button type=button class="btn btn-outline-secondary" data-dismiss="modal"
+                                onclick="location.reload()">
+                                <center><img alt="Recargar la página" src="/img/refresh.svg" height="30" width="30"
+                                        class="m-0"></center>Actualizar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="alert" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered modal-sm" role="document">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <form>
+                        <button type="button" class="close mt-n4" data-dismiss="modal"
+                            aria-label="Close">&times;</button>
+                        <div class="mt-3 text-center">
+                            <img alt="Error" height="120" width="120" class="mb-3" id="alertImg">
+                            <div class="" role="alert" id="alertText">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="toomany" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mt-3 mb-5 text-center">
+                            <img alt="Error" height="300" width="300" id="toomany_img">
+                            <h3><b id="toomany_title"></b></h3>
+                            <h5><small>No se pueden abrir más de 15 pestañas por usuario. <b>Para continuar cierre al
+                                        menos una.</b> Si no puede acceder, pruebe a <a
+                                        href="javascript:session.showLogIn('Inicie sesión para continuar', 'alert-warning');">iniciar
+                                        sesión</a>. </small></h5>
+                        </div>
+                        <div class="text-center mb-2">
+                            <button type=button class="btn btn-outline-secondary" data-dismiss="modal"
+                                onclick="location.reload()">
+                                <center><img alt="Recargar la página" src="/img/refresh.svg" height="30" width="30"
+                                        class="m-0"></center>Reintentar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
-<script src="/js/libs.min.js?hash={% if hash %}{{ hash }}{% endif %}"></script>
-<script src="/js/sections.min.js?hash={% if hash %}{{ hash }}{% endif %}"></script>
 <script>
-  var active;
-  var grid = document.getElementById("grid");
-  var version = '{% if hash %}{{ hash }}{% else %}{% endif %}';
-  var tools = new Toolbox();
-  var session = new Session();
-  var section = new Navigation();
+    var isIE = /*@cc_on!@*/false || !!document.documentMode;
+    var isEdge = !isIE && !!window.StyleMedia;
+    if ((isIE || isEdge) && document.cookie.indexOf("Unsupported") == -1) {
+        console.log("Unsupported browser!");
+        var d = new Date();
+        d.setTime(d.getTime() + 1440 * 60 * 1000);
+        document.cookie = "Unsupported=true" + "; expires=" + d.toUTCString() + ";path=/";
+        alert("This browser is not compatible with rmote.app. You may still browse the site but it may not work properly. It is recommended to use Firefox, Safari or any of the Chromium browsers.");
+    }
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"
+    integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+    integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+    crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+    integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+    crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
+    integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI"
+    crossorigin="anonymous"></script>
+<script src="https://unpkg.com/feather-icons@4.28.0/dist/feather.min.js" crossorigin="anonymous"></script>
+<script src="/libs.min.js?hash={% if hash %}{{ hash }}{% endif %}"></script>
 <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker
-      .register('/sw.js')
-      .then(function () {
-        console.log("Service Worker Registered");
-      });
-  }
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker
+            .register('/sw.js')
+            .then(function () {
+                console.log("Service Worker Registered");
+            });
+    }
+    var version = '{% if hash %}{{ hash }}{% endif %}';
+    var tools = new Toolbox();
+    feather.replace();
+    var session = new Session();
+    var nav = new Navigation();
+</script>
+<script src="/sections.min.js?hash={% if hash %}{{ hash }}{% endif %}"></script>
+<script>
+    nav.reconstruct();
 </script>
 
 </html>

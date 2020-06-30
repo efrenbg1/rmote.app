@@ -16,24 +16,39 @@ class Session {
         return true;
     }
 
-    logIn() {
-        document.getElementById("obfuscator").classList.remove('is-visible');
+    showLogIn(icon, msg, type) {
+        $('.modal').modal('hide');
+        var login_msg = document.getElementById("login_msg");
+        login_msg.innerHTML = `<i data-feather="{}"></i>&nbsp;`.format(icon) + msg;
+        login_msg.classList = "text-center alert my-2 " + type;
+        $('#login').modal({
+            backdrop: 'static',
+            keyboard: false
+        });
+        feather.replace();
+        //window.addEventListener('keydown', session.enter, false);
+    }
+
+    LogIn() {
         var user = document.getElementById("user").value;
         var pw = document.getElementById("pw").value;
-        tools.hideDiag();
-        tools.showLoading('profile');
+        tools.showModal('logging');
         tools.req('/login', function (status, response) {
-            tools.hideDiag();
+            tools.hideModal('logging');
             if (status === 200) {
-                console.log(response);
-                tools.setCookie("Username", response['Username'], 5);
-                tools.setCookie("Session", response['Cookie'], 5);
-                document.getElementById("username").innerText = tools.getCookie("Username");
-                section.reconstruct();
-            } else {
-                tools.showLogIn("Wrong credentials (" + status + ")");
+                tools.hideModal("login");
+                tools.setCookie("Username", response['username'], 5);
+                tools.setCookie("Session", response['cookie'], 5);
+                nav.reconstruct();
+                document.getElementById("user").value = "";
+                document.getElementById("pw").value = "";
+                window.removeEventListener('keydown', session.enter, false);
+                // TODO añadir nombre de usuario conectado como antes
+            } else if (status != 205) {
+                this.showLogIn("alert-triangle", "Wrong e-mail/password (" + status + ")", "alert-danger");
             }
-        }.bind(this), { 'Username': tools.encodeSTR(user), 'Password': tools.encodeSTR(pw) });
+        }.bind(this), { 'user': tools.encodeSTR(user), 'pw': tools.encodeSTR(pw) });
+        tools.hideLoading();
     }
 
     logOut() {

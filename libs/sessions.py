@@ -17,7 +17,8 @@ lsid = threading.Lock()
 
 @socketio.on('connect')
 def on_connect():
-    # TODO Poner comprobación de versión
+    if request.cookies.get('Content') != app.hash:
+        return False
     if not check():
         return False
     user = request.cookies.get('Username')
@@ -38,9 +39,8 @@ def on_connect():
 
 @app.route('/check')
 def sessionCheck():
-    # TODO Poner comprobación de versión
-    # if request.cookies.get('Content') != settings.hash:
-    #    return "205 (Reset Content)", 205
+    if request.cookies.get('Content') != app.hash:
+        return "205 (Reset Content)", 205
     if not check():
         return "401 (Unauthorized)", 401
     user = request.cookies.get('Username')
@@ -73,19 +73,15 @@ def start(user):
 
 @app.route('/login')
 def login():
-    try:
-        user = request.headers.get('Username')
-        pw = request.headers.get('Password')
-        if user is not None and pw is not None:
-            user = base64.b64decode(user).decode('utf-8')
-            pw = base64.b64decode(pw).decode('utf-8')
-            if ddbb.checkPW(user, pw):
-                response = {"Username": user,
-                            "Cookie": start(user), "Permissions": []}
-                return str(json.dumps(response))
-    except Exception as e:
-        print(e)
-        pass
+    user = request.headers.get('user')
+    pw = request.headers.get('pw')
+    if user is not None and pw is not None:
+        user = base64.b64decode(user).decode('utf-8')
+        pw = base64.b64decode(pw).decode('utf-8')
+        if ddbb.checkPW(user, pw):
+            response = {"username": user,
+                        "cookie": start(user)}
+            return str(json.dumps(response))
     return "403 (Forbidden)", 403
 
 

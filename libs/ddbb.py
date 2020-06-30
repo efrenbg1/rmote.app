@@ -3,6 +3,7 @@ from DBUtils.PooledDB import PooledDB
 from flask import Flask, g, request
 import warnings
 from libs import ddbb, password
+from libs.flask import app
 import socket
 import ssl
 import threading
@@ -49,15 +50,15 @@ def publish(topic, slot, message):
     try:
         with lbroker:
             broker.send(str.encode(
-            "MQS6" + len2(topic) + topic + str(slot) + len2(message) + message + '\n'))
+                "MQS6" + len2(topic) + topic + str(slot) + len2(message) + message + '\n'))
     except Exception:
         with lbroker:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.settimeout(10)  
+            s.settimeout(10)
             broker = ssl.wrap_socket(s)
             broker.connect((settings.broker, 2443))
             broker.send(str.encode(
-            "MQS6" + len2(topic) + topic + str(slot) + len2(message) + message + '\n'))
+                "MQS6" + len2(topic) + topic + str(slot) + len2(message) + message + '\n'))
 
 
 def retrieve(topic, slot):
@@ -83,7 +84,8 @@ def retrieve(topic, slot):
                 rx = broker.recv(210)
     finally:
         if isinstance(rx, str):
-            raise Exception("Timed out while waiting for response! Is broker up?")
+            raise Exception(
+                "Timed out while waiting for response! Is broker up?")
         rx = rx.decode("utf-8")
         if len(rx) < 4:
             return None
@@ -91,13 +93,6 @@ def retrieve(topic, slot):
             return None
         if rx[:4] == "MQS2":
             return rx[6:6+int(rx[4:6])]
-
-
-def connect_db():
-    return PooledDB(creator=mysql, user=settings.user, password=settings.pw, host=settings.host, database=settings.db)
-
-
-app = Flask(__name__)
 
 
 def checkPW(user, pw):
@@ -117,47 +112,30 @@ def inAcls(user, mac):
 
 def get_db():
     if not hasattr(app, 'db'):
-        app.db = connect_db()
+        app.db = PooledDB(creator=mysql, user=settings.user,
+                          password=settings.pw, host=settings.host, database=settings.db)
     return app.db.connection()
 
 
 def query(sql, *param):
-    try:
-        cursor = get_db().cursor()
-        cursor.execute(sql, param)
-        result = cursor.fetchall()
-        get_db().commit()
-        if result is not None:
-            return result
-    except Exception as e:
-        print(e)
-        pass
-    return None
-
-
-def querymany(sql, *param):
-    try:
-        cursor = get_db().cursor()
-        cursor.executemany(sql, param)
-        result = cursor.fetchall()
-        get_db().commit()
-        if result is not None:
-            return result
-    except Exception as e:
-        print(e)
-        pass
-    return None
+    if not hasattr(request, 'conn'):
+        request.conn = get_db()
+    cursor = request.conn.cursor()
+    cursor.execute(sql, param)
+    result = cursor.fetchall()
+    request.conn.commit()
+    if result is None:
+        raise Exception("Error fetching query result: is of None type")
+    return result
 
 
 def insert(sql, *param):
-    try:
-        cursor = get_db().cursor()
-        cursor.execute(sql, param)
-        id = cursor.lastrowid
-        get_db().commit()
-        return id
-    except Exception as e:
-        print(e)
-        pass
-    get_db().commit()
-    return None
+    if not hasattr(request, 'conn'):
+        request.conn = get_db()
+    cursor = request.conn.cursor()
+    cursor.execute(sql, param)
+    id = cursor.lastrowid
+    request.conn.commit()
+    if id is None:
+        raise Exception("Insert id returned None")
+    return id
