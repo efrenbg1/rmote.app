@@ -41,7 +41,7 @@ class Toolbox {
         clearTimeout(this.uReqTimer);
         if (!session.check()) {
             this.sClose();
-            session.showLogIn('message-square', 'LogIn to continue', 'alert-info');
+            session.showLogIn('message-square', 'LogIn to continue', 'info');
             return;
         }
         this.timeoutLoading();
@@ -271,6 +271,26 @@ class Toolbox {
         }
     }
 
+    showNavbar() {
+        this.hide("content");
+        var navbar = document.getElementById("navbar");
+        navbar.classList.remove("col-2");
+        navbar.classList.add("col-6");
+        this.show("navbar");
+        this.show("blank");
+        this.navbar = true;
+    }
+
+    hideNavbar() {
+        this.hide("navbar");
+        this.hide("blank");
+        var navbar = document.getElementById("navbar");
+        navbar.classList.remove("col-6");
+        navbar.classList.add("col-2");
+        this.show("content");
+        this.navbar = false;
+    }
+
 
 
     //////// ENCODERS ////////
@@ -311,6 +331,31 @@ class Toolbox {
         }
     }
 }
+
+
+$(window).resize(function () {
+    if ($(window).width() > 930) {
+        var navbar = $("#navbar")[0];
+        var content = $("#content")[0];
+        navbar.classList.remove("col-6");
+        navbar.classList.add("col-2");
+        content.classList.remove("col-12");
+        content.classList.add("col-10");
+        tools.show("navbar");
+        tools.show("content");
+        tools.hide("blank");
+    } else {
+        var navbar = $("#navbar")[0];
+        var content = $("#content")[0];
+        navbar.classList.remove("col-2");
+        navbar.classList.add("col-6");
+        content.classList.remove("col-10");
+        content.classList.add("col-12");
+        tools.hide("navbar");
+        tools.show("content");
+        tools.hide("blank");
+    }
+});
 
 
 String.prototype.format = function () {

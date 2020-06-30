@@ -8,33 +8,23 @@ class Manager {
             if (status != 200) {
                 // TODO mostrar modal error
             }
-            var cards = "";
+            var own = "";
+            var share = "";
+            var html = "";
             var boards = Object.keys(response['own']);
-            this.total = boards.length;
-            for (var i = 0; i < boards.length; i++) {
-                var MAC = response['own'][i]['mac'];
-                var name = response['own'][i]['name'];
-                var shareWith = response['own'][i]['shareWith'];
-                cards += this.templates.card.render({
-                    MAC: MAC,
-                    name: name,
-                    shareWith: shareWith
-                });
-            }
+            this.total = response['own'].length + response['share'].length;
+            response['own'].forEach((n) => {
+                own += this.templates.card.render(n);
+            });
+            html += this.templates.grid.format(own);
+            response['share'].forEach((n) => {
+                share += this.templates.shared.render(n);
+            });
             if (response['share'].length > 0) {
-                this.total = this.total + response['share'].length;
-                var cards = cards + this.templates.divider.format('Shared');
-                for (var i = 0; i < response['share'].length; i++) {
-                    var MAC = response['share'][i]['mac'];
-                    var name = response['share'][i]['name'];
-                    cards = cards + this.templates.shared.render({
-                        name: name,
-                        MAC: MAC
-                    });
-                }
+                html += this.templates.divider.format('Shared') + this.templates.grid.format(share);
             }
-            document.getElementById("grid").innerHTML = cards + this.templates.divider.format('New board') + this.templates.newCard;
-            componentHandler.upgradeAllRegistered();
+            html += this.templates.divider.format('New board') + this.templates.grid.format(this.templates.newCard);
+            tools.draw(html);
         }.bind(this));
     }
 
@@ -217,84 +207,122 @@ class Manager {
 
 class managerTemplates {
     constructor() {
-        this.divider = `
-<div class="mdl-cell mdl-cell--12-col">
-<div class="hr-sect"><span class="mdl-layout-title">{}</span></div>
-</div>
-  `;
-
-        this.card = `<div class="demo-cards mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-grid mdl-grid--no-spacing">
-  <div
-    class="demo-updates mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-cell--12-col-desktop">
-    <div class="on mdl-card--expand mdl-color--teal-300"></div>
-    <div class="mdl-card__supporting-text mdl-color-text--grey-900">{{MAC}}</div>
-    <div class="popup" style="width:100%"
-      onclick="document.getElementById('{{MAC}}_characters').style.display = 'none';">
-      <span class="popuptext" id="{{MAC}}_characters">- 8-20 characters<br>- Only letters and numbers</span></div>
-    <div class="popup" style="width:100%" onclick="document.getElementById('{{MAC}}_old').style.display = 'none';">
-      <span class="popuptext" id="{{MAC}}_old">Please use a new name</span></div>
-    <div style="margin:0 auto;"
-      class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label is-dirty is-upgraded"
-      data-upgraded=",MaterialTextfield">
-      <input class="mdl-textfield__input" type="text" name="name" value="{{name}}" id="{{MAC}}_name">
-      <label class="mdl-textfield__label" for="{{MAC}}_name" style="color:#00bcd4;">Change name:</label>
-    </div>
-    <div class="mdl-card__actions mdl-card--border">
-      <center>
-        <button href="#" class="mdl-button mdl-js-button mdl-js-ripple-effect" onclick="active.save('{{MAC}}')"
-          style="color: #00bcd4;" data-upgraded=",MaterialButton,MaterialRipple">
-          Save
-          <span class="mdl-button__ripple-container"><span class="mdl-ripple"></span></span></button>
-        <button class="mdl-button mdl-js-button" style="color:#3CB92A;" onclick="active.share('{{MAC}}', '{{shareWith}}');"
-          data-upgraded=",MaterialButton">
-          <i class="material-icons">share</i>
-        </button>
-        <button class="mdl-button mdl-js-button" style="color:red;" onclick="active.remove('{{MAC}}');"
-          data-upgraded=",MaterialButton">
-          Remove
-        </button>
-      </center>
-    </div>
-  </div>
+        this.divider = `<div class="hr-sect text-muted mt-3 mb-2">
+    <span>
+        <h5>{}</h5>
+    </span>
 </div>`;
 
-        this.shared = `<div class="demo-cards mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-grid mdl-grid--no-spacing">
-    <div
-        class="demo-updates mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-cell--12-col-desktop">
-        <div class="on mdl-card--expand mdl-color--teal-300"> </div>
-        <div class="mdl-card__supporting-text mdl-color-text--grey-900">{{name}} ({{MAC}})</div>
-        </center>
-        <div class="mdl-card__actions mdl-card--border">
-            <center>
-                <button class="mdl-button mdl-js-button" style="color:red;" onclick="active.removeShare('{{MAC}}');"
-                    data-upgraded=",MaterialButton">
-                    Remove
-                </button>
-            </center>
+        this.grid = `<div class="row d-flex justify-content-around">
+{}
+</div>
+`;
+
+        this.card = `<div class="col-sm-4 pb-3">
+	<div class="card">
+		<img class="card-img-top mb-0" src="/img/on.jpg">
+		<div class="card-body p-2 mt-2">
+			<h5 class="card-title text-center">{{mac}}</h5>
+		</div>
+		<div class="card-body py-0 px-2">
+			<div class="input-group mb-3">
+				<div class="input-group-prepend">
+					<span class="input-group-text">Name:</span>
+				</div>
+				<input type="text" class="form-control" placeholder="Board name" value="{{name}}">
+			</div>
+		</div>
+		<div class="card-footer text-muted bg-white">
+			<div class="container">
+				<div class="row">
+					<div class="col-4 text-left px-0">
+						<button type="button" class="btn btn-outline-success" title="Save name">
+							<i data-feather="save"></i>
+						</button>
+					</div>
+					<div class="col-4 text-center px-0">
+						<button type="button" class="btn btn-outline-primary" title="Share board">
+							<i data-feather="share-2"></i>
+						</button>
+					</div>
+					<div class="col-4 text-right px-0">
+						<button type="button" class="btn btn-outline-danger" title="Remove board">
+							<i data-feather="trash-2"></i>
+						</button>
+					</div>
+					</>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>`;
+
+        this.shared = `<div class="col-sm-4 pb-3">
+<div class="card">
+    <img class="card-img-top mb-0" src="/img/on.jpg">
+    <div class="card-body p-2 mt-2">
+        <h5 class="card-title text-center">{{mac}}</h5>
+    </div>
+    <div class="card-body py-0 px-2">
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text">Name:</span>
+            </div>
+            <input type="text" class="form-control" placeholder="Board name" value="{{name}}" disabled>
         </div>
     </div>
+    <div class="card-footer text-muted bg-white">
+        <div class="container">
+            <div class="row">
+                <div class="col-4 px-0">
+                </div>
+                <div class="col-4 text-center px-0">
+                    <button type="button" class="btn btn-outline-danger" title="Remove board">
+                        <i data-feather="trash-2"></i>
+                    </button>
+                </div>
+                <div class="col-4 px-0">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 </div>`;
 
-        this.newCard = `<div class="demo-cards mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-grid mdl-grid--no-spacing">
-    <div class="demo-updates mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-cell--12-col-desktop">
-    <div class="new mdl-card--expand mdl-color-add"> </div>
-    <center>
-    <div style="margin:0 auto;"
-         class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label is-dirty is-upgraded"
-         data-upgraded=",MaterialTextfield">
-      <input class="mdl-textfield__input" type="text" name="name" id="new_MAC" name="MAC">
-      <label class="mdl-textfield__label" for="{}_name" style="color:#00bcd4;">MAC:</label>
+        this.newCard = `<div class="col-sm-4 pb-3">
+<div class="card">
+    <img class="card-img-top mb-0 mb-3" src="/img/on.jpg">
+    <div class="card-body py-0 px-2">
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text">MAC:</span>
+            </div>
+            <input type="text" class="form-control" placeholder="MAC address">
+        </div>
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text">Name:</span>
+            </div>
+            <input type="text" class="form-control" placeholder="Board name">
+        </div>
     </div>
-    <div style="margin:0 auto;"
-         class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label is-dirty is-upgraded"
-         data-upgraded=",MaterialTextfield">
-      <input class="mdl-textfield__input" type="text" name="name" id="new_Name">
-      <label class="mdl-textfield__label" for="{}_name" style="color:#00bcd4;">Name:</label>
+    <div class="card-footer text-muted bg-white">
+        <div class="container">
+            <div class="row">
+                <div class="col-4 px-0">
+                </div>
+                <div class="col-4 text-center px-0">
+                    <button type="button" class="btn btn-outline-success" title="Add board">
+                        <i data-feather="save"></i>
+                    </button>
+                </div>
+                <div class="col-4 px-0">
+                </div>
+            </div>
+        </div>
     </div>
-    </center>
-    <button class="mdl-button mdl-js-button mdl-js-ripple-effect" type="button" onclick="active.add()">Add</button>
-    </div>
-    </div>`
+</div>
+</div>`;
     }
 }
 

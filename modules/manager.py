@@ -1,13 +1,14 @@
 from modules import modules
 from libs import ddbb, sessions
 from flask import Flask, request
+from libs.flask import socketio
 import base64
 import json
 import string
 import re
 
 
-@modules.hub.route('/manager/list')
+@socketio.on('/manager/list')
 def managerList(h):
     user = request.cookies.get('Username')
 
@@ -25,7 +26,7 @@ def managerList(h):
     return response
 
 
-@modules.hub.route('/manager/name')
+@socketio.on('/manager/name')
 def managerChangeName(h):
     user = request.cookies.get('Username')
     mac = h.get('mac').upper()
@@ -39,7 +40,7 @@ def managerChangeName(h):
     return {'done': True}
 
 
-@modules.hub.route('/manager/share')
+@socketio.on('/manager/share')
 def managerChangeShare(h):
     # TODO arreglar lo de compartir placas
     user = request.cookies.get('Username')
@@ -57,7 +58,7 @@ def managerChangeShare(h):
             return {'done': True}
 
 
-@modules.hub.route('/manager/add')
+@socketio.on('/manager/add')
 def managerAdd(h):
     user = request.cookies.get('Username')
     mac = h.get('mac').upper()
@@ -71,7 +72,7 @@ def managerAdd(h):
     return {'done': True}
 
 
-@modules.hub.route('/manager/remove')
+@socketio.on('/manager/remove')
 def managerRemove(h):
     user = request.cookies.get('Username')
     mac = h.get('mac').upper()

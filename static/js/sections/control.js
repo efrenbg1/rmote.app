@@ -1,3 +1,5 @@
+// TODO poner title a todo lo que se pueda
+
 class Control {
     constructor() {
         this.templates = new controlTemplates();
@@ -144,14 +146,14 @@ class controlTemplates {
 		<div class="card-footer text-muted bg-white">
 			<div class="container">
 				<div class="row">
-					<div class="col-4">
+					<div class="col-4 px-0">
 					</div>
-					<div class="col-4 text-center">
+					<div class="col-4 text-center px-0">
 						<button type="button" class="btn btn-outline-danger">
 							<i data-feather="power"></i>
 						</button>
 					</div>
-					<div class="col-4 text-right pr-0">
+					<div class="col-4 text-right px-0">
 						<div class="btn-group dropup">
 							<button type="button" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown"
 								aria-haspopup="true" aria-expanded="false">
