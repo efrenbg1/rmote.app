@@ -7,6 +7,7 @@ class Control {
     }
 
     list() {
+        session.refresh();
         tools.sreq('/control/list', function (status, response) {
             if (status !== 200) {
                 tools.showFailure(status);

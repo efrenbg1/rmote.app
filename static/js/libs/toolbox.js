@@ -42,7 +42,7 @@ class Toolbox {
         clearTimeout(this.uReqTimer);
         if (!session.check()) {
             this.sClose();
-            session.showLogIn('message-square', 'LogIn to continue', 'info');
+            session.showLogIn('message-square', 'Login to continue', 'info');
             return;
         }
         this.timeoutLoading();
@@ -58,32 +58,6 @@ class Toolbox {
             if (typeof status != "number") status = 200;
             callback(status, response);
         }.bind(this));
-    }
-
-    screq(event, callback, headers) {
-        clearTimeout(this.uReqTimer);
-        if (!session.check()) {
-            this.sClose();
-            return;
-        }
-        this.uReqTimer = setTimeout(function () {
-            if (!session.check()) {
-                this.sClose();
-                return;
-            }
-            if (this.socket == null || this.socket.disconnected) {
-                this.callback.push(function () {
-                    tools.sreq(event, callback, headers);
-                }.bind(this));
-                this.sOpen();
-                return;
-            }
-            session.refresh();
-            this.socket.emit(event, headers, function (response, status) {
-                if (typeof status != "number") status = 200;
-                callback(status, response);
-            }.bind(this));
-        }.bind(this), 500);
     }
 
 
@@ -173,7 +147,7 @@ class Toolbox {
         document.getElementById(
             "toastContent"
         ).innerHTML = `<i data-feather="alert-triangle" class="rounded mr-1 inline-feather" color="red"></i>
-            <strong class="mr-auto" style="color:red;">Error al ejecutar la acción&nbsp;({})</strong>`.format(
+            <strong class="mr-auto" style="color:red;">Something went wrong&nbsp;({})</strong>`.format(
             code
         );
         $("#toast").toast({ delay: 6000 });

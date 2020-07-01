@@ -105,18 +105,24 @@ def disconnect_user(sids):
 
 @app.route('/logout')
 def logout():
-    if check():
-        user = request.cookies.get('Username')
-        with ddbb.lsessions:
-            del ddbb.sessions[user]
-        with lsid:
-            sids = sid.get(user)
-            del sid[user]
-        if sids is not None:
-            socketio.start_background_task(
-                disconnect_user, sids)
-        return """{'done':1}"""
-    return "401 (Unauthorized)", 401
+    user = request.headers.get('Username')
+    hash = request.headers.get('Session')
+    print(user)
+    print(hash)
+    if user is None or hash is None:
+        return "400 (Bad request)", 400
+    with ddbb.lsessions:
+        if ddbb.sessions.get(user) != hash:
+            return "401 (Unauthorized)", 401
+    with ddbb.lsessions:
+        del ddbb.sessions[user]
+    with lsid:
+        sids = sid.get(user)
+        del sid[user]
+    if sids is not None:
+        socketio.start_background_task(
+            disconnect_user, sids)
+    return """{'done':1}"""
 
 
 def check():

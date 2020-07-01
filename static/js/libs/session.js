@@ -59,12 +59,17 @@ class Session {
 
     LogOut() {
         clearInterval(control.interval);
+        if (!this.check()) this.showLogIn("check", "Session closed", "success");
         tools.req('/logout', function (status, response) {
-            document.cookie = "Username=;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
-            document.cookie = "Session=;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+            if (status != 200) tools.showFailure(status);
             this.showLogIn("check", "Session closed", "success");
-            $('#account')[0].innerText = '';
-        }.bind(this));
+        }.bind(this), {
+            'Username': tools.getCookie('Username'),
+            'Session': tools.getCookie('Session')
+        });
+        document.cookie = "Username=;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+        document.cookie = "Session=;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+        $('#account')[0].innerText = '';
     }
 
     enter(e) {

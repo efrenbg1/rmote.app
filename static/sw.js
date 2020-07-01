@@ -39,7 +39,7 @@ self.addEventListener('fetch', event => {
         <h2><b>No Internet connection!</b></h2>
         <br>
         <button type=button onclick=window.location.reload(true)>
-            <center><img src=/img/refresh.svg height=30 width=30 class=m-0></center>Reload
+            <center><img src=/img/refresh.svg height=30 width=30 class=m-0></center>&nbsp;Retry&nbsp;
         </button>
     </center>
 </body>

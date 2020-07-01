@@ -1,7 +1,47 @@
 class Settings {
     constructor() {
         this.templates = new settingsTemplates();
-        document.getElementById("grid").innerHTML = this.templates.grid;
+    }
+
+    list() {
+        if (!session.check()) {
+            session.showLogIn('message-square', 'LogIn to continue', 'info');
+            return;
+        }
+        session.refresh();
+        var menu = [
+            {
+                id: 1,
+                icon: "mail",
+                title: "Email",
+                text: "Change account's email"
+            },
+            {
+                id: 2,
+                icon: "key",
+                title: "Password",
+                text: "Change account's password"
+            },
+            {
+                id: 3,
+                icon: "trash-2",
+                title: "Delete",
+                text: "Permanently delete account"
+            }
+        ];
+        var cards = "";
+        menu.forEach((n) => {
+            cards += this.templates.menuCard.render(n);
+        });
+        tools.draw(this.templates.menu.format(cards));
+    }
+
+    see(id) {
+        if (!session.check()) {
+            session.showLogIn('message-square', 'LogIn to continue', 'info');
+            return;
+        }
+        session.refresh();
     }
 
     mail() {
@@ -293,51 +333,134 @@ class Settings {
 
 class settingsTemplates {
     constructor() {
-        this.grid = `<div class="demo-cards mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-grid mdl-grid--no-spacing">
-    <div class="demo-updates mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-cell--12-col-desktop">
 
-        <center>
-            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label is-dirty is-upgraded" data-upgraded=",MaterialTextfield">
+        this.menuCard = `
+    <div class="col-sm-4 mb-3">
+        <div class="card" onclick="settings.see({{id}})">
+          <div class="card-body ">
+          <center>
+            <i style="width: 24px; height: 24px;" class="mb-3 mt-3" data-feather="{{icon}}"></i>
+            <h5 class="card-title">{{title}}</h5>
+            <p class="card-text">{{text}}</p>
+          </center>
+          </div>
+        </div>
+      </div>`;
 
-                <button style="background-color: Transparent; background-repeat:no-repeat; border: none; cursor:pointer; outline:none;" onclick="active.mail();">
-                    <i class="material-icons" style="position: center; transform:translateY(70%); font-size:70px;">email</i>
+        this.menu = `<div class="row d-flex justify-content-around">
+    {}
+</div>
+
+<div class="modal" tabindex="-1" role="dialog" id="email">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Change email</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-        </center>
+            <div class="modal-body">
+                <form autocomplete="off">
+                    <input style="display:none" type="email">
+                    <input style="display:none" type="password">
+                    <div class="form-group">
+                        <label for="exampleInputEmail1">New email</label>
+                        <input type="email" class="form-control">
+                        <small class="form-text text-muted">The email is only used to login</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Repeat new email</label>
+                        <input type="email" class="form-control" autocomplete="nope">
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm password</label>
+                        <input type="password" class="form-control" autocomplete="new-password">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-success"><i data-feather="save"></i>&nbsp;Save</button>
+            </div>
+        </div>
     </div>
 </div>
 
-<div class="demo-cards mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-grid mdl-grid--no-spacing">
-    <div class="demo-updates mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-cell--12-col-desktop">
-
-        <center>
-            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label is-dirty is-upgraded" data-upgraded=",MaterialTextfield">
-                <button style="background-color: Transparent; background-repeat:no-repeat; border: none; cursor:pointer; outline:none;" onclick="active.password();">
-
-                    <i class="material-icons" style="position: center; transform:translateY(70%); font-size:70px;">fingerprint</i>
+<div class="modal" tabindex="-1" role="dialog" id="password">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Change password</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-        </center>
+            <div class="modal-body">
+                <form autocomplete="off">
+                    <input style="display:none" type="email">
+                    <input style="display:none" type="password">
+                    <div class="form-group">
+                        <label for="exampleInputEmail1">Current password</label>
+                        <input type="password" class="form-control" autocomplete="new-password">
+                    </div>
+                    <div class="form-group">
+                        <label>New password</label>
+                        <input type="password" class="form-control" autocomplete="new-password">
+                    </div>
+                    <div class="form-group">
+                        <label>Repeat new password</label>
+                        <input type="password" class="form-control" autocomplete="new-password">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-success"><i data-feather="save"></i>&nbsp;Save</button>
+            </div>
+        </div>
     </div>
 </div>
 
-<div class="demo-cards mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-grid mdl-grid--no-spacing">
-    <div class="demo-updates mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-cell--12-col-desktop">
-
-        <center>
-            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label is-dirty is-upgraded" data-upgraded=",MaterialTextfield">
-                <button style="background-color: Transparent; background-repeat:no-repeat; border: none; cursor:pointer; outline:none;" onclick="active.destroy();">
-
-                    <i class="material-icons" style="position: center; transform:translateY(70%); font-size:70px;">delete</i>
+<div class="modal" tabindex="-1" role="dialog" id="destroy">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Change email</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-        </center>
+            <div class="modal-body">
+                <form autocomplete="off">
+                    <input style="display:none" type="email">
+                    <input style="display:none" type="password">
+                    <div class="form-group">
+                        <label for="exampleInputEmail1">Current password</label>
+                        <input type="password" class="form-control" autocomplete="new-password">
+                    </div>
+                    <div class="form-group">
+                        <label>New password</label>
+                        <input type="password" class="form-control" autocomplete="new-password">
+                    </div>
+                    <div class="form-group">
+                        <label>Repeat new password</label>
+                        <input type="password" class="form-control" autocomplete="new-password">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-success"><i data-feather="save"></i>&nbsp;Save</button>
+            </div>
+        </div>
     </div>
-</div>
-
-<div id="demo-toast-example" class="mdl-js-snackbar mdl-snackbar">
-    <div class="mdl-snackbar__text"></div>
-    <button class="mdl-snackbar__action" type="button"></button>
 </div>`;
     }
 }
+
+var settings = new Settings();
+nav.modules["settings"] = {
+    class: function () {
+        return settings;
+    },
+    icon: "settings",
+    name: "Account settings"
+};
