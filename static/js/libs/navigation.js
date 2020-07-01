@@ -39,6 +39,7 @@ class Navigation {
     }
 
     reconstruct() {
+        clearInterval(control.interval);
         if (this.order === 0) {
             if (this.section().length === 0) {
                 this.setSection(this.mainID);

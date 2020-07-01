@@ -1,5 +1,4 @@
 // TODO poner title (ayudita) a todo lo que se pueda
-
 class Control {
     constructor() {
         this.templates = new controlTemplates();
@@ -38,7 +37,10 @@ class Control {
             tools.draw(this.templates.grid.format(cards));
             this.updateCards(response['own']);
             this.updateCards(response['share']);
-            this.interval = setInterval(control.update.bind(this), 1000);
+            clearInterval(this.interval);
+            this.interval = setInterval(function () {
+                control.update();
+            }, 1000)
         }.bind(this));
     }
 
@@ -56,10 +58,9 @@ class Control {
         tools.sreq('/control/update', function (status, response) {
             if (status === 200) {
                 this.updateCards(response);
-            } else if (status === 401) {
-                clearInterval(tools.interval);
-            } else {
-                tools.snack("No internet");
+            } else if (status === 400) {
+                tools.showModal('error');
+                clearInterval(control.interval);
             }
         }.bind(this));
     }

@@ -1,15 +1,14 @@
 import base64
-import time
 import json
-import string
 import os
 import random
 import threading
 from datetime import datetime
 from termcolor import colored
-from libs import ddbb, password, core
+from libs import ddbb
 from libs.flask import socketio, app
-from flask import Flask, request
+from flask import request
+from flask_socketio import disconnect
 
 sid = {}
 lsid = threading.Lock()
@@ -31,6 +30,7 @@ def on_connect():
                 return False
             sids.append(request.sid)
             sid[user] = sids
+        print(sid[user])
     now = datetime.now()
     log = colored(now.strftime("%H:%M:%S"), 'blue') + " → Socket: " + colored(
         request.remote_addr, "yellow")
@@ -59,6 +59,8 @@ def on_disconnect():
         try:
             sid[request.cookies.get(
                 'Username')].remove(request.sid)
+            print(sid[request.cookies.get(
+                'Username')])
         except:
             pass
 
@@ -79,24 +81,41 @@ def login():
         user = base64.b64decode(user).decode('utf-8')
         pw = base64.b64decode(pw).decode('utf-8')
         if ddbb.checkPW(user, pw):
+            with lsid:
+                sids = sid.get(user)
+                sid[user] = []
+            if sids is not None:
+                socketio.start_background_task(
+                    disconnect_user, sids)
             response = {"username": user,
                         "cookie": start(user)}
             return str(json.dumps(response))
     return "403 (Forbidden)", 403
 
 
+def disconnect_user(sids):
+    with app.app_context():
+        for e in sids:
+            socketio.sleep(0.2)
+            try:
+                disconnect(e, namespace='/')
+            except Exception:
+                pass
+
+
 @app.route('/logout')
 def logout():
-    try:
+    if check():
         user = request.cookies.get('Username')
-        hash = request.cookies.get('Session')
-        if user is not None and hash is not None:
-            with ddbb.lsessions:
-                if ddbb.sessions.get(user) == hash:
-                    del ddbb.sessions[user]
-        return """{'Done':1}"""
-    except Exception:
-        pass
+        with ddbb.lsessions:
+            del ddbb.sessions[user]
+        with lsid:
+            sids = sid.get(user)
+            del sid[user]
+        if sids is not None:
+            socketio.start_background_task(
+                disconnect_user, sids)
+        return """{'done':1}"""
     return "401 (Unauthorized)", 401
 
 

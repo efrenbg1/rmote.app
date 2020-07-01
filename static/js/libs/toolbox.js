@@ -38,6 +38,7 @@ class Toolbox {
     }
 
     sreq(event, callback, headers) {
+        console.log(event)
         clearTimeout(this.uReqTimer);
         if (!session.check()) {
             this.sClose();
@@ -94,8 +95,10 @@ class Toolbox {
      * @param (Object) headers
      */
     req(url, callback, headers) {
+        this.timeoutLoading();
+        session.refresh();
         let req = new XMLHttpRequest();
-        req.open('GET', url, true);
+        req.open("GET", url, true);
         if (headers !== undefined) {
             let keys = Object.keys(headers);
             for (let i = 0; i < keys.length; i++) {
@@ -103,39 +106,42 @@ class Toolbox {
             }
         }
         req.responseType = 'json';
-        req.onload = function () {
-            if (req.status === 401) {
-                tools.hideDiag();
-                tools.showLogIn("Session timed out")
+        req.onreadystatechange = function () {
+            if (req.readyState == 4) {
+                this.hideLoading();
+                if (req.status === 401) {
+                    session.showLogIn("message-square", "Login to continue", "info",);
+                    return;
+                }
+                if (req.status === 429) {
+                    var modals = {
+                        1: {
+                            image: '/img/429_1.png',
+                            title: "The cloud doesn't fall from trees",
+                        },
+                        2: {
+                            image: '/img/429_2.png',
+                            title: "Don't be a ghost and close some tabs"
+                        }
+                    }
+                    var random = Math.floor(Math.random() * 2) + 1;
+                    $('#toomany_img')[0].src = modals[random].image;
+                    $('#toomany_title')[0].innerText = modals[random].title;
+                    tools.showModal('toomany');
+                    return;
+                }
+                if (req.status === 503) {
+                    tools.showModal("offline");
+                    return;
+                }
+                if (req.status === 205) {
+                    tools.showModal('update');
+                    return;
+                }
+                callback(req.status, req.response);
             }
-            if (callback != undefined) callback(req.status, req.response);
         }.bind(this);
         req.send();
-    }
-
-    /**
-     * Makes a controlled request using the parameters introduced
-     * @param (string) url The url you will make the request to
-     * @param (function) callback Function that calls back when it was successful
-     * @param (Object) headers
-     */
-    controlledReq(url, callback, headers) {
-        if (this.uReq !== undefined) {
-            this.uReq.abort();
-        }
-        this.uReq = new XMLHttpRequest();
-        this.uReq.open('GET', url, true);
-        if (headers !== undefined) {
-            let keys = Object.keys(headers);
-            for (let i = 0; i < keys.length; i++) {
-                this.uReq.setRequestHeader(keys[i], headers[keys[i]]);
-            }
-        }
-        this.uReq.responseType = 'json';
-        this.uReq.onload = function () {
-            callback(this.uReq.status, this.uReq.response);
-        }.bind(this);
-        this.uReq.send();
     }
 
 
