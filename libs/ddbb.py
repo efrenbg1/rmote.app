@@ -1,7 +1,6 @@
 import pymysql as mysql
 from DBUtils.PooledDB import PooledDB
-from flask import Flask, g, request
-import warnings
+from flask import request
 from libs import ddbb, password
 from libs.flask import app
 import socket
@@ -96,8 +95,10 @@ def retrieve(topic, slot):
 
 
 def checkPW(user, pw):
-    hash = ddbb.query("SELECT pw FROM user WHERE username=%s LIMIT 1", user)[0]
-    if password.checkHash(hash[0], pw):
+    hash = ddbb.query("SELECT pw FROM user WHERE username=%s LIMIT 1", user)
+    if len(hash) != 1:
+        return False
+    if password.checkHash(hash[0][0], pw):
         return True
     return False
 

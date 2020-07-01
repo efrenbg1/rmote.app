@@ -1,0 +1,4 @@
+db/*
+**/__pycache__/
+error.log
+*.min.js

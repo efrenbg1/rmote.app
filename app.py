@@ -1,31 +1,39 @@
 from modules import modules, control, manager, settings, register
 from libs import core, ddbb, password, sessions, error
 from libs.flask import app, socketio, template_dir
-from flask import Flask, redirect, render_template, request, send_from_directory
+from flask import redirect, render_template, request, send_from_directory
 import sys
 import os
 import checksumdir
-import jsmin
+from jsmin import jsmin
 from termcolor import colored
 from datetime import datetime
 import werkzeug
 
+minimal = True
+if "-nominify" in sys.argv:
+    minimal = False
 
-print('Minifying JS...')
+
+print(colored('Compiling JS...', 'magenta'), end="")
 tempMin = ""
 for file in os.listdir('static/js/sections'):
     with open('static/js/sections/' + file, 'r') as f:
-        tempMin += jsmin.jsmin(f.read(), quote_chars="'\"`")
+        tempMin += jsmin(f.read()) if minimal else f.read()
 with open('static/sections.min.js', "w") as f:
     f.write(tempMin)
 tempMin = ""
 for file in os.listdir('static/js/libs'):
     with open('static/js/libs/' + file, 'r') as f:
-        tempMin += jsmin.jsmin(f.read(), quote_chars="'\"`")
+        tempMin += jsmin(f.read()) if minimal else f.read()
+with open('static/js/index.js', 'r') as f:
+    tempMin += jsmin(f.read()) if minimal else f.read()
 with open('static/libs.min.js', "w") as f:
     f.write(tempMin)
-app.hash = checksumdir.dirhash(os.path.join(os.getcwd(), 'static'))[0:4]
-print("Hash: " + app.hash)
+tempMin = ""
+app.hash = checksumdir.dirhash(
+    os.path.join(os.getcwd(), 'static'))[0:4]
+print(colored('done', 'green'))
 
 
 @app.before_request

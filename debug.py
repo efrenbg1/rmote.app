@@ -7,7 +7,7 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from livereload import Server
 
-command = ["python", "app.py"]
+command = ["python3", "app.py", "-nominify"]
 
 app = subprocess.Popen(command)
 
@@ -41,5 +41,5 @@ observer.start()
 server = Server()
 server.watch('static/sections.min.js', delay=2)
 server.watch('static/index.html', delay=2)
-server.watch('static/css/index.css', delay=2)
+server.watch('static/index.css', delay=2)
 server.serve(liveport=35729, debug=False)

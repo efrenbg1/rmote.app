@@ -1,14 +1,16 @@
-// TODO poner title a todo lo que se pueda
+// TODO poner title (ayudita) a todo lo que se pueda
 
 class Control {
     constructor() {
         this.templates = new controlTemplates();
         this.version = 5;
+        this.interval = null;
     }
 
     list() {
         tools.sreq('/control/list', function (status, response) {
             if (status !== 200) {
+                tools.showFailure(status);
                 return;
             }
             var cards = "";
@@ -35,16 +37,13 @@ class Control {
             }
             tools.draw(this.templates.grid.format(cards));
             this.updateCards(response['own']);
-            /*this.updateCards(response['share']);
-            this.update();
-            tools.interval = setInterval(active.update.bind(this), 1000);
-            tools.hideDiag();*/
+            this.updateCards(response['share']);
+            this.interval = setInterval(control.update.bind(this), 1000);
         }.bind(this));
     }
 
     action(MAC, payload) {
-        session.refresh();
-        tools.req('/control/action', function (status, response) {
+        tools.sreq('/control/action', function (status, response) {
             if (status === 200) {
                 tools.snack("Done")
             } else {
