@@ -26,7 +26,7 @@ class Settings {
                 id: 3,
                 icon: "trash-2",
                 title: "Delete",
-                text: "Permanently delete account"
+                text: "Permanently delete this account"
             }
         ];
         var cards = "";
@@ -335,8 +335,8 @@ class settingsTemplates {
     constructor() {
 
         this.menuCard = `
-    <div class="col-sm-4 mb-3">
-        <div class="card" onclick="settings.see({{id}})">
+    <div class="col-sm-4 mb-3" onclick="settings.see({{id}})">
+        <div class="card">
           <div class="card-body ">
           <center>
             <i style="width: 24px; height: 24px;" class="mb-3 mt-3" data-feather="{{icon}}"></i>

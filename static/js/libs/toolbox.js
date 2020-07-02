@@ -38,7 +38,6 @@ class Toolbox {
     }
 
     sreq(event, callback, headers) {
-        console.log(event)
         clearTimeout(this.uReqTimer);
         if (!session.check()) {
             this.sClose();
@@ -165,11 +164,11 @@ class Toolbox {
         feather.replace();
     }
 
-    showSuccess() {
+    showSuccess(msg) {
         document.getElementById(
             "toastContent"
         ).innerHTML = `<i data-feather="check" class="rounded mr-1 inline-feather" color="green"></i>
-            <strong class="mr-auto">Guardado correctamente</strong>`;
+            <strong class="mr-auto">{}</strong>`.format(msg);
         $("#toast").toast({ delay: 6000 });
         $("#toast").toast("show");
         feather.replace();

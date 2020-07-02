@@ -1,16 +1,14 @@
-from libs import ddbb, sessions
+from libs import ddbb
 from libs.flask import socketio
-from flask import Flask, request
-import base64
-import json
-import string
+from flask import request
+import time
 
 
 @socketio.on('/control/list')
 def controlList(h):
     user = request.cookies.get('Username')
     main = ddbb.query(
-        "SELECT acls.mac, acls.name, acls.cluster FROM acls, user WHERE acls.user=user.id AND user.username=%s ORDER BY name", user)
+        "SELECT acls.mac, acls.name FROM acls, user WHERE acls.user=user.id AND user.username=%s ORDER BY name", user)
     secondary = ddbb.query(
         "SELECT acls.mac, acls.name FROM acls, share, user WHERE share.user=user.id AND share.mac=acls.mac AND user.username=%s", user)
     response = {'own': [], 'share': []}
@@ -18,7 +16,7 @@ def controlList(h):
         status = ddbb.retrieve(r[0], 0)
         action = ddbb.retrieve(r[0], 1)
         version = ddbb.retrieve(r[0], 2)
-        response['own'].append({'mac': r[0], 'name': r[1], 'cluster': r[2],
+        response['own'].append({'mac': r[0], 'name': r[1],
                                 'status': status, 'action': action, 'version': version})
     for r in secondary:
         status = ddbb.retrieve(r[0], 0)
@@ -26,7 +24,6 @@ def controlList(h):
         version = ddbb.retrieve(r[0], 2)
         response['share'].append(
             {'mac': r[0], 'name': r[1], 'status': status, 'action': action, 'version': version})
-    # TODO desconectar cliente (casi que mejor ponerlo en login)
     return response
 
 

@@ -1,10 +1,6 @@
-from modules import modules
-from libs import ddbb, sessions
-from flask import Flask, request
+from libs import ddbb
+from flask import request
 from libs.flask import socketio
-import base64
-import json
-import string
 import re
 
 
@@ -12,14 +8,14 @@ import re
 def managerList(h):
     user = request.cookies.get('Username')
 
-    main = ddbb.query("SELECT acls.mac, acls.name, acls.cluster, GROUP_CONCAT(IF(share.owner=(SELECT id FROM user WHERE username=%s) AND share.mac=acls.mac AND share.user=user.id, user.username, '') SEPARATOR '') AS shareWith FROM acls, share, user WHERE acls.user=(SELECT id FROM user WHERE username=%s) GROUP BY acls.mac", user, user)
+    main = ddbb.query("SELECT acls.mac, acls.name, GROUP_CONCAT(IF(share.owner=(SELECT id FROM user WHERE username=%s) AND share.mac=acls.mac AND share.user=user.id, user.username, '') SEPARATOR '') AS shareWith FROM acls, share, user WHERE acls.user=(SELECT id FROM user WHERE username=%s) GROUP BY acls.mac", user, user)
 
     secondary = ddbb.query("SELECT acls.mac, acls.name, GROUP_CONCAT(IF(share.user=(SELECT id FROM user WHERE username=%s) AND user.id=share.owner, user.username, '') SEPARATOR '') as shareBy FROM acls, share, user WHERE share.user=(SELECT id FROM user WHERE username=%s) AND share.mac=acls.mac", user, user)
 
     response = {'own': [], 'share': []}
     for r in main:
         response['own'].append(
-            {'mac': r[0], 'name': r[1], 'cluster': r[2], 'shareWith': r[3]})
+            {'mac': r[0], 'name': r[1], 'shareWith': r[2]})
     for r in secondary:
         response['share'].append(
             {'mac': r[0], 'name': r[1], 'shareBy': r[2]})

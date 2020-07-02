@@ -4,9 +4,11 @@ class Manager {
     }
 
     list() {
+        session.refresh();
         tools.sreq('/manager/list', function (status, response) {
             if (status != 200) {
-                // TODO mostrar modal error
+                tools.showFailure(status);
+                return;
             }
             var own = "";
             var share = "";
@@ -49,31 +51,25 @@ class Manager {
         }
     }
 
-    save(MAC) {
+    save(mac) {
         session.refresh();
-        var name = document.getElementById(MAC + "_name");
-        //var autoOFF = this.getMinutesUTC(document.getElementById(MAC + "_off").value);
-        //var autoON = this.getMinutesUTC(document.getElementById(MAC + "_on").value);
-        var cluster = (document.getElementById(MAC + "_cluster").checked) ? '1' : '0';
+        var name = document.getElementById(mac).value;
         var filter = /^([a-zA-Z0-9]{1,10})$/;
-        if (!filter.test(name.value)) {
-            tools.show(MAC + "_characters");
+        if (!filter.test(name)) {
+            $('#' + mac.replace(/:/g, "\\:")).tooltip('show');
         } else {
-            tools.hide(MAC + "_characters");
-            tools.req('/manager/change', function (status, response) {
+            $('#' + mac.replace(/:/g, "\\:")).tooltip('hide');
+            tools.sreq('/manager/name', function (status, response) {
                 if (status === 200) {
-                    tools.snack("Done");
-                    this.getCards();
+                    tools.showSuccess("The new name has been saved");
+                    nav.load('manager');
                 } else {
-                    tools.snack("Failed!")
+                    tools.showFailure(status);
                 }
             }.bind(this), {
-                'mac': MAC,
+                'mac': mac,
                 'type': "0",
-                'name': name.value,
-                'cluster': cluster
-                /*'autoOFF': autoOFF,
-                'autoON': autoON*/
+                'name': name,
             });
         }
     }
@@ -214,9 +210,48 @@ class managerTemplates {
 </div>`;
 
         this.grid = `<div class="row d-flex justify-content-around">
-{}
+    {}
 </div>
-`;
+
+<div class="modal" tabindex="-1" role="dialog" id="share">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body">
+                <button type="button" class="close mt-n2" data-dismiss="modal" aria-label="Close">×</button>
+                <div class="mt-3 text-center">
+                    <h5 class="modal-title mt-4">Insert e-mail address of receiver (blank to disable it):</h5>
+                    <div class="input-group mt-4">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><i data-feather="mail"></i></span>
+                        </div>
+                        <input type="email" class="form-control" placeholder="Email" aria-label="Email">
+                    </div>
+                </div>
+                <div class="mt-4 text-right">
+                    <button type="button" class="btn btn-primary"><i data-feather="share-2"></i>&nbsp;Share</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-body">
+    <form>
+        <button type="button" class="close mt-n4" data-dismiss="modal" aria-label="Close">×</button>
+        <div class="mt-3 text-center">
+            <img alt="Error" height="120" width="120" class="mb-3" id="alertImg" src="/img/405_1.png">
+            <div class="mb-0 alert alert-danger" role="alert" id="alertText"><svg xmlns="http://www.w3.org/2000/svg"
+                    width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round"
+                    class="feather feather-alert-triangle rounded mr-1 inline-feather">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z">
+                    </path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>&nbsp;hey</div>
+        </div>
+    </form>
+</div>`;
 
         this.card = `<div class="col-sm-4 pb-3">
 	<div class="card">
@@ -229,28 +264,27 @@ class managerTemplates {
 				<div class="input-group-prepend">
 					<span class="input-group-text">Name:</span>
 				</div>
-				<input type="text" class="form-control" placeholder="Board name" value="{{name}}">
+				<input type="text" class="form-control" placeholder="Board name" value="{{name}}" id="{{mac}}" rel="name" title="Only letters and numbers" data-placement="top" maxlength="15">
 			</div>
 		</div>
 		<div class="card-footer text-muted bg-white">
 			<div class="container">
-				<div class="row">
-					<div class="col-4 text-left px-0">
-						<button type="button" class="btn btn-outline-success" title="Save name">
-							<i data-feather="save"></i>
-						</button>
-					</div>
-					<div class="col-4 text-center px-0">
-						<button type="button" class="btn btn-outline-primary" title="Share board">
-							<i data-feather="share-2"></i>
-						</button>
-					</div>
-					<div class="col-4 text-right px-0">
-						<button type="button" class="btn btn-outline-danger" title="Remove board">
+                <div class="row">
+                    <div class="col-4 text-left px-0">
+						<button type="button" class="btn btn-outline-danger" title="Remove board" onclick="manager.remove('{{mac}}')">
 							<i data-feather="trash-2"></i>
 						</button>
 					</div>
-					</>
+					<div class="col-4 text-center px-0">
+						<button type="button" class="btn btn-outline-primary" title="Share board" onclick="manager.share('{{mac}}')">
+							<i data-feather="share-2"></i>
+						</button>
+                    </div>
+                    <div class="col-4 text-right px-0">
+						<button type="button" class="btn btn-outline-success" title="Save name" onclick="manager.save('{{mac}}')">
+							<i data-feather="save"></i>
+						</button>
+					</div>
 				</div>
 			</div>
 		</div>

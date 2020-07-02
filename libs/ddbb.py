@@ -7,8 +7,6 @@ import socket
 import ssl
 import threading
 import json
-from pathlib import Path
-import shelve
 import select
 
 
@@ -34,10 +32,6 @@ with open('settings.json', "r") as f:
 s = None
 broker = None
 lbroker = threading.Lock()
-
-Path("db").mkdir(parents=True, exist_ok=True)
-sessions = shelve.open('db/sessions', writeback=True)
-lsessions = threading.Lock()
 
 
 def len2(string):

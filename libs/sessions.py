@@ -30,7 +30,6 @@ def on_connect():
                 return False
             sids.append(request.sid)
             sid[user] = sids
-        print(sid[user])
     now = datetime.now()
     log = colored(now.strftime("%H:%M:%S"), 'blue') + " → Socket: " + colored(
         request.remote_addr, "yellow")
@@ -59,8 +58,6 @@ def on_disconnect():
         try:
             sid[request.cookies.get(
                 'Username')].remove(request.sid)
-            print(sid[request.cookies.get(
-                'Username')])
         except:
             pass
 
@@ -68,8 +65,7 @@ def on_disconnect():
 def start(user):
     hash = base64.urlsafe_b64encode(
         bytearray(os.urandom(random.randint(40, 60)))).decode('utf-8')
-    with ddbb.lsessions:
-        ddbb.sessions[user] = hash
+    ddbb.query("UPDATE user SET session=%s WHERE username=%s", hash, user)
     return hash
 
 
@@ -107,15 +103,16 @@ def disconnect_user(sids):
 def logout():
     user = request.headers.get('Username')
     hash = request.headers.get('Session')
-    print(user)
-    print(hash)
     if user is None or hash is None:
         return "400 (Bad request)", 400
-    with ddbb.lsessions:
-        if ddbb.sessions.get(user) != hash:
-            return "401 (Unauthorized)", 401
-    with ddbb.lsessions:
-        del ddbb.sessions[user]
+    session = ddbb.query("SELECT session FROM user WHERE username=%s", user)
+    if len(session) > 0:
+        session = session[0][0]
+    else:
+        session = None
+    if session != hash:
+        return "401 (Unauthorized)", 401
+    ddbb.query("UPDATE user SET session=NULL WHERE username=%s", user)
     with lsid:
         sids = sid.get(user)
         del sid[user]
@@ -128,9 +125,13 @@ def logout():
 def check():
     user = request.cookies.get('Username')
     hash = request.cookies.get('Session')
-    if user is None or hash is None:
+    if user is None or hash is None or len(hash) > 150 or len(user) > 50:
         return False
-    with ddbb.lsessions:
-        if ddbb.sessions.get(user) == hash:
-            return True
+    session = ddbb.query("SELECT session FROM user WHERE username=%s", user)
+    if len(session) > 0:
+        session = session[0][0]
+    else:
+        session = None
+    if session == hash:
+        return True
     return False

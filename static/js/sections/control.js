@@ -4,6 +4,7 @@ class Control {
         this.templates = new controlTemplates();
         this.version = 5;
         this.interval = null;
+        this.status = [];
     }
 
     list() {
@@ -45,14 +46,14 @@ class Control {
         }.bind(this));
     }
 
-    action(MAC, payload) {
+    action(mac, payload) {
         tools.sreq('/control/action', function (status, response) {
             if (status === 200) {
-                tools.snack("Done")
+                tools.showSuccess('Command sent');
             } else {
-                tools.snack("Failed!")
+                tools.showFailure(status);
             }
-        }.bind(this), { 'mac': MAC, 'payload': payload });
+        }.bind(this), { 'mac': mac, 'payload': payload });
     }
 
     update() {
@@ -67,6 +68,7 @@ class Control {
     }
 
     updateCards(response) {
+        if (!nav.section().includes('control')) return;
         var status = {
             null: '/img/papelito.png',
             "0": '/img/off.jpg',
@@ -77,9 +79,19 @@ class Control {
             "9": '/img/boardoff.png'
         };
         response.forEach((n) => {
-            document.getElementById(n.mac + "_status").src = status[n.status];
+            var stat = document.getElementById(n.mac + "_status");
+            if (stat.src != status[n.status]) stat.src = status[n.status];
             var html = this.templates.waiting;
             switch (n.action) {
+                case '0':
+                    html = this.templates.turning;
+                    break;
+                case '1':
+                    html = this.templates.turning;
+                    break;
+                case '2':
+                    html = this.templates.turning;
+                    break;
                 case '3':
                     html = this.templates.turning;
                     break;
@@ -96,7 +108,10 @@ class Control {
                     html = ""
                     break;
             }
-            document.getElementById(n.mac + "_action").innerHTML = html
+            if (n.status == "9") html = this.templates.off;
+            if (n.status == null) html = '';
+            var action = document.getElementById(n.mac + "_action");
+            if (action.innerHTML != html) action.innerHTML = html;
         });
         feather.replace();
     }
@@ -124,11 +139,15 @@ class controlTemplates {
         <span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span>&nbsp;Working on it...
     </div>`;
 
-        this.done = `<div class="alert alert-danger text-center mb-0" role="alert">
+        this.failed = `<div class="alert alert-danger text-center mb-0" role="alert">
             <i data-feather="alert-triangle"></i>&nbsp;Action failed
         </div>`;
 
-        this.dones = `<div class="alert alert-secondary text-center mb-0" role="alert" >
+        this.off = `<div class="alert alert-warning text-center mb-0" role="alert">
+            <i data-feather="alert-triangle"></i>&nbsp;Board is off
+        </div>`;
+
+        this.done = `<div class="alert alert-secondary text-center mb-0" role="alert" >
             <i data-feather="check"></i>&nbsp;Waiting for command
         </div>`;
 
@@ -150,7 +169,7 @@ class controlTemplates {
 					<div class="col-4 px-0">
 					</div>
 					<div class="col-4 text-center px-0">
-						<button type="button" class="btn btn-outline-danger">
+						<button type="button" class="btn btn-outline-danger" onclick="control.action('{{mac}}', '0')">
 							<i data-feather="power"></i>
 						</button>
 					</div>
@@ -161,9 +180,9 @@ class controlTemplates {
 								<i data-feather="chevron-up"></i>
 							</button>
 							<div class="dropdown-menu">
-								<a class="dropdown-item pl-3 mb-1" href="javascript:"><i data-feather="download-cloud"></i>&nbsp;&nbsp;Update firmware</a>
-								<a class="dropdown-item pl-3 mb-1" href="javascript:"><i data-feather="activity"></i>&nbsp;&nbsp;Recovery</a>
-								<a class="dropdown-item pl-3" href="javascript:"><i data-feather="x-octagon"></i>&nbsp;&nbsp;Force off</a>
+								<a class="dropdown-item pl-3 mb-1" href="javascript:control.action('{{mac}}', '8')"><i data-feather="download-cloud"></i>&nbsp;&nbsp;Update firmware</a>
+								<a class="dropdown-item pl-3 mb-1" href="javascript:control.action('{{mac}}', '9')"><i data-feather="activity"></i>&nbsp;&nbsp;Recovery</a>
+								<a class="dropdown-item pl-3" href="javascript:control.action('{{mac}}', '1')"><i data-feather="x-octagon"></i>&nbsp;&nbsp;Force off</a>
 							</div>
 						</div>
 					</div>

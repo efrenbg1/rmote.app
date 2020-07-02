@@ -7,7 +7,7 @@
 9 -> Update Fingerprint
 
 
-///// topic = BC:DD:C2:08:8C:BE ///// (only MAC) (status topic)
+///// topic = BC:DD:C2:08:8C:BE + 0 ///// (status topic)
 0 -> PC off
 1 -> PC on
 2 -> PC suspended
@@ -18,10 +18,10 @@
 
 
 
-///// topic = _BC:DD:C2:08:8C:BE ///// ("_" + MAC)  (actions topic)
+///// topic = BC:DD:C2:08:8C:BE + 1 ///// (actions topic)
 0 -> Simple power button click (to turn off or on)
 1 -> Force off (holds button for 5s)
-2-5 -> not used
+2-3 -> not used
 4 -> Turning off
 5 -> Action failed
 6 -> Performed action (default status, waiting for command or cancel action)
