@@ -1,13 +1,9 @@
 import pymysql as mysql
 from DBUtils.PooledDB import PooledDB
 from flask import request
-from libs import ddbb, password
+from libs import password
 from libs.flask import app
-import socket
-import ssl
-import threading
 import json
-import select
 
 
 class SettingsDB:
@@ -29,67 +25,9 @@ with open('settings.json', "r") as f:
     settings.db = param['db']
     settings.broker = param['broker']
 
-s = None
-broker = None
-lbroker = threading.Lock()
-
-
-def len2(string):
-    return str(len(string)).zfill(2)
-
-
-def publish(topic, slot, message):
-    global broker, lbroker, s
-    try:
-        with lbroker:
-            broker.send(str.encode(
-                "MQS6" + len2(topic) + topic + str(slot) + len2(message) + message + '\n'))
-    except Exception:
-        with lbroker:
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.settimeout(10)
-            broker = ssl.wrap_socket(s)
-            broker.connect((settings.broker, 2443))
-            broker.send(str.encode(
-                "MQS6" + len2(topic) + topic + str(slot) + len2(message) + message + '\n'))
-
-
-def retrieve(topic, slot):
-    global broker, lbroker, s
-    rx = "MQS7\n"
-    try:
-        with lbroker:
-            broker.send(str.encode(
-                "MQS7" + len2(topic) + topic + str(slot) + '\n'))
-            ready = select.select([broker], [], [], 1)
-            if ready[0]:
-                rx = broker.recv(210)
-    except Exception:
-        with lbroker:
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.settimeout(10)
-            broker = ssl.wrap_socket(s)
-            broker.connect((settings.broker, 2443))
-            broker.send(str.encode(
-                "MQS7" + len2(topic) + topic + str(slot) + '\n'))
-            ready = select.select([broker], [], [], 1)
-            if ready[0]:
-                rx = broker.recv(210)
-    finally:
-        if isinstance(rx, str):
-            raise Exception(
-                "Timed out while waiting for response! Is broker up?")
-        rx = rx.decode("utf-8")
-        if len(rx) < 4:
-            return None
-        if rx[:4] == "MQS7":
-            return None
-        if rx[:4] == "MQS2":
-            return rx[6:6+int(rx[4:6])]
-
 
 def checkPW(user, pw):
-    hash = ddbb.query("SELECT pw FROM user WHERE username=%s LIMIT 1", user)
+    hash = query("SELECT pw FROM user WHERE username=%s LIMIT 1", user)
     if len(hash) != 1:
         return False
     if password.checkHash(hash[0][0], pw):

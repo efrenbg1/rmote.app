@@ -3,6 +3,8 @@ class Manager {
         this.templates = new managerTemplates();
     }
 
+    // TODO Añadir this looks empty con el perrito
+
     list() {
         session.refresh();
         tools.sreq('/manager/list', function (status, response) {
@@ -10,10 +12,11 @@ class Manager {
                 tools.showFailure(status);
                 return;
             }
+            console.log(response)
             var own = "";
             var share = "";
             var html = "";
-            var boards = Object.keys(response['own']);
+            this.boards = response['own'];
             this.total = response['own'].length + response['share'].length;
             response['own'].forEach((n) => {
                 own += this.templates.card.render(n);
@@ -25,7 +28,7 @@ class Manager {
             if (response['share'].length > 0) {
                 html += this.templates.divider.format('Shared') + this.templates.grid.format(share);
             }
-            html += this.templates.divider.format('New board') + this.templates.grid.format(this.templates.newCard);
+            html += this.templates.divider.format('New board') + this.templates.grid.format(this.templates.newCard) + this.templates.modals;
             tools.draw(html);
         }.bind(this));
     }
@@ -74,127 +77,69 @@ class Manager {
         }
     }
 
-    checkShare() {
-        var email = document.getElementById("email");
-        var filter = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
-        if (email.value.length > 0) {
-            if (!filter.test(email.value)) {
-                tools.show("valid");
-                tools.hide("save");
+    share(mac) {
+        session.refresh();
+        if (mac === undefined) {
+            var email = String($('#email')[0].value).toLowerCase();
+            const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+            if (re.test(email) || email.length == 0) {
+                tools.hideModal('share');
+                tools.sreq('/manager/share', function (status, response) {
+                    if (status == 200 && response['done']) {
+                        tools.showSuccess('Changes saved')
+                        this.list();
+                        return;
+                    }
+                    tools.showFailure(status)
+                }.bind(this), {
+                    'mac': this.edit,
+                    'email': email
+                });
             } else {
-                tools.hide("valid");
-                tools.show("save");
+                $('#email').tooltip('show');
             }
         } else {
-            tools.show("save");
-            tools.hide("valid");
-        }
-    }
-
-    share(MAC, old, email) {
-        session.refresh();
-        if (email === undefined) {
-            showDialog({
-                title: 'Insert e-mail address of receiver (blank to disable it):',
-                text: `<center><form action="javascript:">
-            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-            <div class="popup">
-            <span class="popuptext" id="valid">Please insert a valid email address or leave it blank to disable it</span></div>
-            <input class="mdl-textfield__input" type="email" id="email" onkeyup="active.checkShare()" value="{}">
-            <label class="mdl-textfield__label" for="sample1">Email:</label>
-            </div>
-            </form></center>`.format(old),
-                positive: {
-                    title: '<h style="color:green;">Share</h>',
-                    id: 'save',
-                    onClick: function () { active.share(MAC, old, true); }
-                },
-                negative: {
-                    title: '<h style="color:red;" disabled>Cancel</h>'
-                },
-                onLoaded: function () {
-                    tools.hide("save");
+            this.boards.forEach((n) => {
+                if (n.mac == mac) {
+                    $('#email')[0].value = n.shareWith;
+                    this.edit = n.mac;
+                    tools.showModal('share');
+                    return;
                 }
             });
-        } else {
-            var email = document.getElementById("email").value;
-            tools.hideDiag();
-            tools.showLoading();
-            tools.req('/manager/change', function (status, response) {
-                if (status === 200) {
-                    tools.snack("Done");
-                    this.getCards();
-                } else {
-                    tools.hideDiag();
-                    tools.snack("Failed!");
-                }
-            }.bind(this), { "type": "1", "email": tools.encodeSTR(email), "mac": MAC });
         }
     }
 
-    removeShare(MAC, force) {
+    remove(mac) {
         session.refresh();
-        if (force) {
-            tools.req('/manager/change', function (status, response) {
-                tools.hideDiag();
-                if (status === 200) {
-                    tools.snack("Done");
-                    this.getCards();
-                } else {
-                    tools.snack("Failed!");
+        if (mac == undefined) {
+            this.boards.forEach((n) => {
+                if (n.mac == this.edit) {
+                    var name = $('#removeName');
+                    if (name[0].value != n.name) {
+                        name.tooltip('show');
+                    }
+                    return;
                 }
-            }.bind(this), { "type": "1", "email": "", "mac": MAC });
-        } else {
-            if (this.total !== 1 || confirm("Removing the last board will delete this account! Are you sure?")) {
-                showDialog({
-                    title: `<h3 class="mdl-dialog__title" style="width:100%">Are you sure?</h3>`,
-                    text: `<br><center>Shared boards can't be added by user</center><br>`,
-                    negative: {
-                        title: '<h style="color:green;" disabled>No</h>',
-                    },
-                    positive: {
-                        title: '<h style="color:red;" disabled>Yes</h>',
-                        onClick: function () {
-                            active.removeShare(MAC, true);
-                        }
-                    },
-                    cancelable: true,
-                    contentStyle: { 'max-width': '300px' },
-                });
-            }
-        }
-    }
-
-    remove(MAC, force) {
-        session.refresh();
-        if (force) {
-            tools.req('/manager/change', function (status, response) {
-                tools.hideDiag();
-                if (status === 200) {
-                    tools.snack("Done");
-                    this.getCards();
-                } else {
-                    tools.snack("Failed!");
+            });
+            tools.hideModal('remove');
+            tools.sreq('/manager/remove', function (status, response) {
+                if (status == 200 && response['done']) {
+                    tools.showSuccess('Changes saved')
+                    this.list();
+                    return;
                 }
-            }.bind(this), { 'mac': MAC, 'type': "9" });
+                tools.showFailure(status);
+            }.bind(this), { 'mac': this.edit });
         } else {
-            if (this.total !== 1 || confirm("Removing the last board will delete this account! Are you sure?")) {
-                showDialog({
-                    title: '<h3 class="mdl-dialog__title" style="width:100%">Are you sure?</h3>',
-                    text: '<br>',
-                    negative: {
-                        title: '<h style="color:green;" disabled>No</h>',
-                    },
-                    positive: {
-                        title: '<h style="color:red;" disabled>Yes</h>',
-                        onClick: function () {
-                            active.remove(MAC, true);
-                        }
-                    },
-                    cancelable: true,
-                    contentStyle: { 'max-width': '300px' },
-                });
-            }
+            this.boards.forEach((n) => {
+                if (n.mac == mac) {
+                    $('#removeTitle')[0].innerText = "Remove board: {{mac}} ({{name}})".render(n);
+                    this.edit = n.mac;
+                    tools.showModal('remove');
+                    return;
+                }
+            });
         }
     }
 }
@@ -209,11 +154,7 @@ class managerTemplates {
     </span>
 </div>`;
 
-        this.grid = `<div class="row d-flex justify-content-around">
-    {}
-</div>
-
-<div class="modal" tabindex="-1" role="dialog" id="share">
+        this.modals = `<div class="modal" tabindex="-1" role="dialog" id="share">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-body">
@@ -224,33 +165,45 @@ class managerTemplates {
                         <div class="input-group-prepend">
                             <span class="input-group-text"><i data-feather="mail"></i></span>
                         </div>
-                        <input type="email" class="form-control" placeholder="Email" aria-label="Email">
+                        <input type="email" class="form-control" placeholder="Email" aria-label="Email" id="email"
+                            rel="email" title="Use a valid email" data-placement="top">
                     </div>
                 </div>
                 <div class="mt-4 text-right">
-                    <button type="button" class="btn btn-primary"><i data-feather="share-2"></i>&nbsp;Share</button>
+                    <button type="button" class="btn btn-primary" onclick="manager.share()"><i
+                            data-feather="share-2"></i>&nbsp;Share</button>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<div class="modal-body">
-    <form>
-        <button type="button" class="close mt-n4" data-dismiss="modal" aria-label="Close">×</button>
-        <div class="mt-3 text-center">
-            <img alt="Error" height="120" width="120" class="mb-3" id="alertImg" src="/img/405_1.png">
-            <div class="mb-0 alert alert-danger" role="alert" id="alertText"><svg xmlns="http://www.w3.org/2000/svg"
-                    width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round"
-                    class="feather feather-alert-triangle rounded mr-1 inline-feather">
-                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z">
-                    </path>
-                    <line x1="12" y1="9" x2="12" y2="13"></line>
-                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                </svg>&nbsp;hey</div>
+<div class="modal" tabindex="-1" role="dialog" id="remove">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body">
+                <button type="button" class="close mt-n2" data-dismiss="modal" aria-label="Close">×</button>
+                <div class="mt-3 text-center">
+                    <h5 class="modal-title mt-4" id="removeTitle"></h5>
+                    <div class="input-group mt-4">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><i data-feather="clipboard"></i></span>
+                        </div>
+                        <input type="text" class="form-control" placeholder="Confirm name to remove" aria-label="Name" id="removeName"
+                            rel="removeName" title="Input the name to confirm" data-placement="top">
+                    </div>
+                </div>
+                <div class="mt-4 text-right">
+                    <button type="button" class="btn btn-danger" onclick="manager.remove()"><i
+                            data-feather="trash-2"></i>&nbsp;Remove</button>
+                </div>
+            </div>
         </div>
-    </form>
+    </div>
+</div>
+`;
+
+        this.grid = `<div class="row d-flex justify-content-around">
+    {}
 </div>`;
 
         this.card = `<div class="col-sm-4 pb-3">

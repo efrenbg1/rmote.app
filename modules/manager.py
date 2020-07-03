@@ -1,4 +1,4 @@
-from libs import ddbb
+from libs import ddbb, mqtls
 from flask import request
 from libs.flask import socketio
 import re
@@ -8,9 +8,10 @@ import re
 def managerList(h):
     user = request.cookies.get('Username')
 
-    main = ddbb.query("SELECT acls.mac, acls.name, GROUP_CONCAT(IF(share.owner=(SELECT id FROM user WHERE username=%s) AND share.mac=acls.mac AND share.user=user.id, user.username, '') SEPARATOR '') AS shareWith FROM acls, share, user WHERE acls.user=(SELECT id FROM user WHERE username=%s) GROUP BY acls.mac", user, user)
+    main = ddbb.query("SELECT acls.mac, acls.name, (SELECT user.username FROM share, user WHERE share.user=user.id AND share.mac=acls.mac) FROM acls WHERE acls.user=(SELECT id FROM user WHERE username=%s)", user)
 
-    secondary = ddbb.query("SELECT acls.mac, acls.name, GROUP_CONCAT(IF(share.user=(SELECT id FROM user WHERE username=%s) AND user.id=share.owner, user.username, '') SEPARATOR '') as shareBy FROM acls, share, user WHERE share.user=(SELECT id FROM user WHERE username=%s) AND share.mac=acls.mac", user, user)
+    secondary = ddbb.query(
+        "SELECT acls.mac, acls.name, user.username FROM acls, share, user WHERE share.mac=acls.mac AND user.id=share.owner AND share.user=(SELECT id FROM user WHERE username=%s)", user)
 
     response = {'own': [], 'share': []}
     for r in main:
@@ -38,67 +39,74 @@ def managerChangeName(h):
 
 @socketio.on('/manager/share')
 def managerChangeShare(h):
-    # TODO arreglar lo de compartir placas
     user = request.cookies.get('Username')
-    mac = h.get('mac').upper()
+    mac = h.get('mac')
+    if not isinstance(mac, str):
+        return "400 (Bad request)", 400
+    mac = mac.upper()
     if not ddbb.inAcls(user, mac):
         return "403 (Forbidden)", 403
     email = h.get("email")
+    if not isinstance(email, str):
+        return "400 (Bad request)", 400
+    email = email.lower()
+    affected = ddbb.query(
+        "SELECT username FROM user WHERE id=(SELECT user FROM share WHERE mac=%s)", mac)
+    ddbb.query("DELETE FROM share WHERE share.mac=%s", mac)
     if re.match("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$", email):
-        return shareHandler(user, mac, email)
-    else:
-        q = ddbb.query(
-            "DELETE FROM share WHERE share.mac=%s AND (share.owner=(SELECT id FROM user WHERE username=%s) OR share.user=(SELECT id FROM user WHERE username=%s))", mac, user, user)
-        ddbb.query("DELETE IGNORE FROM user WHERE pw=''")
-        if q != None:
+        if email == user:
             return {'done': True}
+        new = ddbb.query("SELECT id, pw FROM user WHERE username=%s", email)
+        if len(new) == 0:
+            receiver = ddbb.insert(
+                "INSERT INTO user(username, pw) VALUES (%s, '')", email)
+        else:
+            receiver = new[0][0]
+        ddbb.query(
+            "INSERT INTO share (owner, user, mac) VALUES ((SELECT id FROM user WHERE username=%s), %s, %s)", user, receiver, mac)
+    ddbb.query(
+        "DELETE FROM user WHERE id NOT IN (SELECT user FROM share) AND id NOT IN (SELECT user FROM acls)")
+    for u in affected:
+        mqtls.acls(u[0])
+    return {'done': True}
 
 
 @socketio.on('/manager/add')
 def managerAdd(h):
     user = request.cookies.get('Username')
-    mac = h.get('mac').upper()
+    mac = h.get('mac')
+    if not isinstance(mac, str):
+        return "400 (Bad request)", 400
+    mac = mac.upper()
+    email = h.get("email")
+    if not isinstance(email, str):
+        return "400 (Bad request)", 400
+    email = email.lower()
     if not ddbb.inAcls(user, mac):
         return "403 (Forbidden)", 403
     name = h.get('name')
     if not re.match("^[A-Za-z0-9_-]*$", name) or len(name) > 15:
         return "400 (Bad request)", 400
     ddbb.query("INSERT INTO acls (mac, user, name) VALUES (%s, (SELECT id FROM user WHERE username=%s), %s)", mac, user, name)
-    # TODO poner actualizar acls del broker (aunque para añadir no debería ser necesario)
     return {'done': True}
 
 
 @socketio.on('/manager/remove')
 def managerRemove(h):
     user = request.cookies.get('Username')
-    mac = h.get('mac').upper()
+    mac = h.get('mac')
+    if not isinstance(mac, str):
+        return "400 (Bad request)", 400
+    mac = mac.upper()
     if not ddbb.inAcls(user, mac):
         return "403 (Forbidden)", 403
+    affected = ddbb.query(
+        "SELECT username FROM user WHERE id=(SELECT user FROM share WHERE mac=%s) OR id=(SELECT user FROM acls WHERE mac=%s)", mac, mac)
+    print(affected)
     ddbb.query(
         "DELETE FROM share WHERE owner=(SELECT id FROM user WHERE username=%s) AND mac=%s", user, mac)
     ddbb.query(
         "DELETE FROM acls WHERE user=(SELECT id FROM user WHERE username=%s) AND mac=%s", user, mac)
-    # TODO actualizar acls del broker
+    for u in affected:
+        mqtls.acls(u[0])
     return {'done': True}
-
-
-def shareHandler(owner, mac, email):
-    # TODO esto hay que simplificarlo
-    new = ddbb.query("SELECT id, pw FROM user WHERE username=%s", email)
-    if len(new) == 0:
-        insert = ddbb.insert(
-            "INSERT INTO user(username, pw) VALUES (%s, '')", email)
-    else:
-        insert = new[0][0]
-    q = ddbb.insert(
-        "INSERT INTO share(owner, user, mac) VALUES ((SELECT id FROM user WHERE username=%s), %s, %s)", owner, insert, mac)
-    if q == None:  # board already exists
-        if insert == None:
-            q = ddbb.insert(
-                "UPDATE share SET user=(SELECT id FROM user WHERE username=%s) WHERE mac=%s AND owner=(SELECT id FROM user WHERE username=%s)", email, mac, owner)
-        else:
-            q = ddbb.insert(
-                "UPDATE share SET user=%s WHERE mac=%s AND owner=(SELECT id FROM user WHERE username=%s)", insert, mac, owner)
-        if q != None:
-            ddbb.query("DELETE IGNORE FROM user WHERE pw=''")
-    return {'Done': '1'}

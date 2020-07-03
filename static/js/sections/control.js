@@ -109,7 +109,7 @@ class Control {
                     break;
             }
             if (n.status == "9") html = this.templates.off;
-            if (n.status == null) html = '';
+            if (n.status == null) html = this.templates.off;
             var action = document.getElementById(n.mac + "_action");
             if (action.innerHTML != html) action.innerHTML = html;
         });
@@ -144,7 +144,7 @@ class controlTemplates {
         </div>`;
 
         this.off = `<div class="alert alert-warning text-center mb-0" role="alert">
-            <i data-feather="alert-triangle"></i>&nbsp;Board is off
+            <i data-feather="alert-triangle"></i>&nbsp;Board is offline
         </div>`;
 
         this.done = `<div class="alert alert-secondary text-center mb-0" role="alert" >
