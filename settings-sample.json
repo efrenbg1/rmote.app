@@ -1,0 +1,15 @@
+// rmote.app will read the file names as "settings.json". This is an example file 
+{
+    "mysql": {
+        "host": "MySQL IP address to connect to",
+        "user": "MySQL username",
+        "pw": "MySQL password",
+        "db": "MySQL database name"
+    },
+    "broker": "Ip address of broker (should be 127.0.0.1 for super user access)",
+    "email": {
+        "host": "smtp.gmail.com:25",
+        "user": "email address used to send recovery emails",
+        "pw": "My super secret password of my email address"
+    }
+}

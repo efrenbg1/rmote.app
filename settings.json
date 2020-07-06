@@ -1,7 +1,0 @@
-{
-    "host": "192.168.0.3",
-    "user": "web",
-    "pw": "Edilizia5!",
-    "db": "rmote",
-    "broker": "127.0.0.1"
-}
