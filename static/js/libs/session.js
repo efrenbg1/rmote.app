@@ -43,7 +43,6 @@ class Session {
         tools.req('/login', function (status, response) {
             tools.hideModal('logging');
             if (status === 200) {
-                // DONE Ocultar el modal de inicio de sesión mientras sale el logging
                 tools.setCookie("Username", response['username'], 5);
                 tools.setCookie("Session", response['cookie'], 5);
                 nav.reconstruct();

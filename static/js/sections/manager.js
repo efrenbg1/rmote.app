@@ -12,7 +12,6 @@ class Manager {
                 tools.showFailure(status);
                 return;
             }
-            console.log(response)
             var own = "";
             var share = "";
             var html = "";
@@ -37,27 +36,32 @@ class Manager {
         session.refresh();
         var mac = document.getElementById("new_MAC").value;
         var name = document.getElementById("new_Name").value;
-        var filter = /^([a-zA-Z0-9]{1,10})$/;
+        var filter = /^([a-zA-Z0-9]{1,15})$/;
         var re = /^(([A-Fa-f0-9]{2}[:]){5}[A-Fa-f0-9]{2}[,]?)+$/;
-        if (filter.test(name) && re.test(mac)) {
-            tools.sreq('/manager/change', function (status, response) {
-                if (status === 200) {
-                    tools.snack("Done");
-                    this.getCards();
-                } else {
-                    tools.snack("Failed!")
-                }
-                this.getCards();
-            }.bind(this), { 'mac': mac, 'type': "8", 'name': name });
-        } else {
-            tools.snack("Wrong input");
+        if (!re.test(mac)) {
+            $('#new_MAC').tooltip('show');
+            return;
         }
+        $('#new_MAC').tooltip('hide');
+        if (!filter.test(name)) {
+            $('#new_Name').tooltip('show');
+            return;
+        }
+        $('#new_Name').tooltip('hide');
+        tools.sreq('/manager/add', function (status, response) {
+            if (status === 200) {
+                tools.showSuccess("Board has been added");
+                nav.load('manager');
+            } else {
+                tools.showFailure(status);
+            }
+        }.bind(this), { 'mac': mac, 'name': name });
     }
 
     save(mac) {
         session.refresh();
         var name = document.getElementById(mac).value;
-        var filter = /^([a-zA-Z0-9]{1,10})$/;
+        var filter = /^([a-zA-Z0-9]{1,15})$/;
         if (!filter.test(name)) {
             $('#' + mac.replace(/:/g, "\\:")).tooltip('show');
         } else {
@@ -71,7 +75,6 @@ class Manager {
                 }
             }.bind(this), {
                 'mac': mac,
-                'type': "0",
                 'name': name,
             });
         }
@@ -284,13 +287,13 @@ class managerTemplates {
             <div class="input-group-prepend">
                 <span class="input-group-text">MAC:</span>
             </div>
-            <input type="text" class="form-control" placeholder="MAC address">
+            <input type="text" class="form-control" placeholder="MAC address" id="new_MAC" rel="name" title="Input a valid MAC address (XX:XX:XX:XX:XX)" data-placement="top" maxlength="17">
         </div>
         <div class="input-group mb-3">
             <div class="input-group-prepend">
                 <span class="input-group-text">Name:</span>
             </div>
-            <input type="text" class="form-control" placeholder="Board name">
+            <input type="text" class="form-control" placeholder="Board name" id="new_Name" rel="name" title="Only letters and numbers" data-placement="top" maxlength="15">
         </div>
     </div>
     <div class="card-footer text-muted bg-white">
@@ -299,7 +302,7 @@ class managerTemplates {
                 <div class="col-4 px-0">
                 </div>
                 <div class="col-4 text-center px-0">
-                    <button type="button" class="btn btn-outline-success" title="Add board">
+                    <button type="button" class="btn btn-outline-success" title="Add board" onclick="manager.add()">
                         <i data-feather="save"></i>
                     </button>
                 </div>

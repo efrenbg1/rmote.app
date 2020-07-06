@@ -57,7 +57,7 @@ class Control {
     }
 
     update() {
-        tools.sreq('/control/update', function (status, response) {
+        tools.screq('/control/update', function (status, response) {
             if (status === 200) {
                 this.updateCards(response);
             } else if (status === 400) {
@@ -108,8 +108,7 @@ class Control {
                     html = ""
                     break;
             }
-            if (n.status == "9") html = this.templates.off;
-            if (n.status == null) html = this.templates.off;
+            if (n.status == "9" || n.status == null) html = "";
             var action = document.getElementById(n.mac + "_action");
             if (action.innerHTML != html) action.innerHTML = html;
         });

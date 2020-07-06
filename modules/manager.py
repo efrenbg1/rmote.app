@@ -40,6 +40,7 @@ def managerChangeName(h):
 @socketio.on('/manager/share')
 def managerChangeShare(h):
     user = request.cookies.get('Username')
+
     mac = h.get('mac')
     if not isinstance(mac, str):
         return "400 (Bad request)", 400
@@ -50,9 +51,11 @@ def managerChangeShare(h):
     if not isinstance(email, str):
         return "400 (Bad request)", 400
     email = email.lower()
+
     affected = ddbb.query(
         "SELECT username FROM user WHERE id=(SELECT user FROM share WHERE mac=%s)", mac)
     ddbb.query("DELETE FROM share WHERE share.mac=%s", mac)
+
     if re.match("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$", email):
         if email == user:
             return {'done': True}
@@ -78,12 +81,6 @@ def managerAdd(h):
     if not isinstance(mac, str):
         return "400 (Bad request)", 400
     mac = mac.upper()
-    email = h.get("email")
-    if not isinstance(email, str):
-        return "400 (Bad request)", 400
-    email = email.lower()
-    if not ddbb.inAcls(user, mac):
-        return "403 (Forbidden)", 403
     name = h.get('name')
     if not re.match("^[A-Za-z0-9_-]*$", name) or len(name) > 15:
         return "400 (Bad request)", 400

@@ -59,6 +59,29 @@ class Toolbox {
         }.bind(this));
     }
 
+    screq(event, callback, headers) {
+        if (!session.check()) {
+            this.sClose();
+            session.showLogIn('message-square', 'Login to continue', 'info');
+            return;
+        }
+        if (this.socket == null || this.socket.disconnected) {
+            this.callback.push(function () {
+                tools.sreq(event, callback, headers);
+            }.bind(this));
+            this.sOpen();
+            return;
+        }
+        this.socket.emit(event, headers, function (response, status) {
+            if (typeof status != "number") status = 200;
+            callback(status, response);
+        }.bind(this));
+    }
+
+
+
+
+
 
     //////// HTML ////////
     /**

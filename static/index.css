@@ -240,6 +240,10 @@ img {
       display: block;
   }
 
+  #account {
+    display: none;
+  }
+
   .navbar {
       margin-left: -20px;
       margin-right: -20px;
@@ -259,6 +263,10 @@ img {
 @media (min-width: 930px) {
   .mobile-button {
       display: none;
+  }
+
+  #account {
+    display: block;
   }
 }
 

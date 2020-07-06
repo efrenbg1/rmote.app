@@ -1,13 +1,14 @@
 from modules import modules
 from libs import ddbb, sessions, password
+from libs.flask import socketio
 from flask import request
 import base64
 import json
 import re
 
 
-@modules.hub.route('/settings/email')
-def settingsEmail():
+@socketio.on('/settings/email')
+def settingsEmail(h):
     if sessions.check(request.cookies):
         try:
             user = request.cookies.get('Username')
@@ -18,8 +19,8 @@ def settingsEmail():
                     q = ddbb.query(
                         "UPDATE user SET username=%s WHERE username=%s", new, user)
                     if q != None:
-                        #ddbb.users.delete(user)
-                        #ddbb.sessions.delete(user)
+                        # ddbb.users.delete(user)
+                        # ddbb.sessions.delete(user)
                         return str(json.dumps({'Done': '1'}))
         except Exception as e:
             print(e)
@@ -27,8 +28,8 @@ def settingsEmail():
     return "401 (Unauthorized)", 401
 
 
-@modules.hub.route('/settings/password')
-def settingsPassword():
+@socketio.on('/settings/password')
+def settingsPassword(h):
     if sessions.check(request.cookies):
         try:
             user = request.cookies.get('Username')
@@ -47,8 +48,8 @@ def settingsPassword():
     return "401 (Unauthorized)", 401
 
 
-@modules.hub.route('/settings/destroy')
-def settingsDestroy():
+@socketio.on('/settings/destroy')
+def settingsDestroy(h):
     if sessions.check(request.cookies):
         try:
             user = request.cookies.get('Username')
@@ -64,8 +65,8 @@ def settingsDestroy():
                         account = ddbb.query(
                             "DELETE FROM user WHERE username=%s", user)
                         if account != None:
-                            #ddbb.users.delete(user)
-                            #ddbb.sessions.delete(user)
+                            # ddbb.users.delete(user)
+                            # ddbb.sessions.delete(user)
                             return str(json.dumps({'Done': '1'}))
         except Exception as e:
             print(e)

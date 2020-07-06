@@ -1,4 +1,6 @@
-import hashlib, base64, uuid
+import hashlib
+import uuid
+
 
 def createHash(string):
     salt = uuid.uuid4().hex
