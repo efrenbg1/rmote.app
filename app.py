@@ -1,5 +1,5 @@
 from modules import modules, control, manager, settings, register
-from libs import core, ddbb, password, sessions, error
+from libs import core, ddbb, password, sessions, error, email
 from libs.flask import app, socketio, template_dir
 from flask import redirect, render_template, request, send_from_directory
 import sys
@@ -34,6 +34,8 @@ tempMin = ""
 app.hash = checksumdir.dirhash(
     os.path.join(os.getcwd(), 'static'))[0:4]
 print(colored('done', 'green'))
+
+email.send('efren@boyarizo.es')
 
 
 @app.before_request

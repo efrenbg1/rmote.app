@@ -15,15 +15,28 @@ class SettingsDB:
         self.broker = broker
 
 
+class SettingsEmail:
+    def __init__(self, host, port, user, pw):
+        self.host = host
+        self.port = port
+        self.user = user
+        self.pw = pw
+
+
 settings = SettingsDB("127.0.0.1", "root", "", "rmote", "127.0.0.1")
+email = SettingsEmail("smtp.gmail.com", 25, "name@domain.com", "password")
 
 with open('settings.json', "r") as f:
     param = json.load(f)
-    settings.host = param['host']
-    settings.user = param['user']
-    settings.pw = param['pw']
-    settings.db = param['db']
+    settings.host = param['mysql']['host']
+    settings.user = param['mysql']['user']
+    settings.pw = param['mysql']['pw']
+    settings.db = param['mysql']['db']
     settings.broker = param['broker']
+    email.host = param['email']['host']
+    email.port = param['email']['port']
+    email.user = param['email']['user']
+    email.pw = param['email']['pw']
 
 
 def checkPW(user, pw):
