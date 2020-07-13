@@ -1,4 +1,4 @@
-// rmote.app will read the file names as "settings.json". This is an example file 
+// rmote.app will read the file named as "settings.json". This is an example file 
 {
     "mysql": {
         "host": "MySQL IP address to connect to",
