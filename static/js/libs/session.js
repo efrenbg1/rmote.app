@@ -1,22 +1,16 @@
 class Session {
     constructor() {
-        if (this.check()) $('#account')[0].innerText = tools.getCookie("Username");
+        if (this.refresh()) $('#account')[0].innerText = tools.getCookie("Username");
     }
 
     refresh() {
-        try {
-            tools.setCookie("Username", tools.getCookie("Username"), 5);
-            tools.setCookie("Session", tools.getCookie("Session"), 5);
-        } catch (e) {
-        }
-    }
-    // TODO poner refresh para evitar que se cierre la sesión
-
-    check() {
         if (tools.getCookie("Session") === undefined || tools.getCookie("Username") === undefined) {
             $('#account')[0].innerText = '';
+            this.showLogIn('message-square', 'Login to continue', 'info');
             return false;
         }
+        tools.setCookie("Username", tools.getCookie("Username"), 5);
+        tools.setCookie("Session", tools.getCookie("Session"), 5);
         return true;
     }
 
@@ -31,7 +25,7 @@ class Session {
             keyboard: false
         });
         feather.replace();
-        window.addEventListener('keydown', session.enter, false);
+        window.addEventListener('keydown', this.enter, false);
     }
 
     LogIn() {
@@ -39,13 +33,13 @@ class Session {
         var pw = document.getElementById("pw").value;
         tools.hideModal("login");
         tools.showModal('logging');
-        window.removeEventListener('keydown', session.enter, false);
+        window.removeEventListener('keydown', this.enter, false);
         tools.req('/login', function (status, response) {
             tools.hideModal('logging');
             if (status === 200) {
                 tools.setCookie("Username", response['username'], 5);
                 tools.setCookie("Session", response['cookie'], 5);
-                nav.reconstruct();
+                ui.reconstruct();
                 document.getElementById("user").value = "";
                 document.getElementById("pw").value = "";
                 $('#account')[0].innerText = response['username'];
@@ -58,7 +52,6 @@ class Session {
 
     LogOut() {
         clearInterval(control.interval);
-        if (!this.check()) this.showLogIn("check", "Session closed", "success");
         tools.req('/logout', function (status, response) {
             if (status != 200) tools.showFailure(status);
             this.showLogIn("check", "Session closed", "success");
@@ -73,7 +66,7 @@ class Session {
 
     enter(e) {
         if (e.keyCode === 13) {
-            session.LogIn();
+            this.LogIn();
         }
     }
 }

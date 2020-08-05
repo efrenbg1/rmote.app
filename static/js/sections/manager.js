@@ -1,12 +1,12 @@
 class Manager {
-    constructor() {
+    constructor(grid) {
+        this.grid = grid;
         this.templates = new managerTemplates();
     }
 
     // TODO Añadir this looks empty con el perrito
 
     list() {
-        session.refresh();
         tools.sreq('/manager/list', function (status, response) {
             if (status != 200) {
                 tools.showFailure(status);
@@ -28,12 +28,12 @@ class Manager {
                 html += this.templates.divider.format('Shared') + this.templates.grid.format(share);
             }
             html += this.templates.divider.format('New board') + this.templates.grid.format(this.templates.newCard) + this.templates.modals;
-            tools.draw(html);
+            ui.draw(this.grid, html);
         }.bind(this));
     }
 
     add() {
-        session.refresh();
+        if (!session.refresh()) return;
         var mac = document.getElementById("new_MAC").value;
         var name = document.getElementById("new_Name").value;
         var filter = /^([a-zA-Z0-9]{1,15})$/;
@@ -51,7 +51,7 @@ class Manager {
         tools.sreq('/manager/add', function (status, response) {
             if (status === 200) {
                 tools.showSuccess("Board has been added");
-                nav.load('manager');
+                ui.load('manager');
             } else {
                 tools.showFailure(status);
             }
@@ -59,7 +59,7 @@ class Manager {
     }
 
     save(mac) {
-        session.refresh();
+        if (!session.refresh()) return;
         var name = document.getElementById(mac).value;
         var filter = /^([a-zA-Z0-9]{1,15})$/;
         if (!filter.test(name)) {
@@ -69,7 +69,7 @@ class Manager {
             tools.sreq('/manager/name', function (status, response) {
                 if (status === 200) {
                     tools.showSuccess("The new name has been saved");
-                    nav.load('manager');
+                    ui.load('manager');
                 } else {
                     tools.showFailure(status);
                 }
@@ -81,7 +81,7 @@ class Manager {
     }
 
     share(mac) {
-        session.refresh();
+        if (!session.refresh()) return;
         if (mac === undefined) {
             var email = String($('#email')[0].value).toLowerCase();
             const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -114,7 +114,7 @@ class Manager {
     }
 
     remove(mac) {
-        session.refresh();
+        if (!session.refresh()) return;
         if (mac == undefined) {
             this.boards.forEach((n) => {
                 if (n.mac == this.edit) {
@@ -317,11 +317,14 @@ class managerTemplates {
 }
 
 
-var manager = new Manager();
-nav.modules["manager"] = {
+var manager = new Manager("managerGrid");
+ui.modules["manager"] = {
+    modules: [],
     class: function () {
         return manager;
     },
+    grid: "managerGrid",
     icon: "edit",
-    name: "Boards manager"
+    translation: "Boards manager",
+    onList: function () { }
 };

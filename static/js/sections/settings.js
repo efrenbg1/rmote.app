@@ -1,14 +1,11 @@
 class Settings {
-    constructor() {
+    constructor(grid) {
+        this.grid = grid;
         this.templates = new settingsTemplates();
     }
 
     list() {
-        if (!session.check()) {
-            session.showLogIn('message-square', 'LogIn to continue', 'info');
-            return;
-        }
-        session.refresh();
+        if (!session.refresh()) return;
         var menu = [
             {
                 id: 1,
@@ -33,19 +30,11 @@ class Settings {
         menu.forEach((n) => {
             cards += this.templates.menuCard.render(n);
         });
-        tools.draw(this.templates.menu.format(cards));
-    }
-
-    see(id) {
-        if (!session.check()) {
-            session.showLogIn('message-square', 'LogIn to continue', 'info');
-            return;
-        }
-        session.refresh();
+        ui.draw(this.grid, this.templates.menu.format(cards));
     }
 
     mail() {
-        session.refresh();
+        if (!session.refresh()) return;
         showDialog({
             title: 'Change email:',
             text: `<center><form action="javascript:" autocomplete="off">
@@ -84,7 +73,7 @@ class Settings {
     }
 
     password() {
-        session.refresh();
+        if (!session.refresh()) return;
         showDialog({
             title: 'Change password:',
             text: `<center>
@@ -129,7 +118,7 @@ class Settings {
     }
 
     destroy() {
-        session.refresh();
+        if (!session.refresh()) return;
         showDialog({
             title: 'Please confirm data to delete the account:',
             text: `<center>
@@ -456,11 +445,14 @@ class settingsTemplates {
     }
 }
 
-var settings = new Settings();
-nav.modules["settings"] = {
+var settings = new Settings("settingsGrid");
+ui.modules["settings"] = {
+    modules: [],
     class: function () {
         return settings;
     },
+    grid: "settingsGrid",
     icon: "settings",
-    name: "Account settings"
+    translation: "Account settings",
+    onList: function () { }
 };

@@ -10,6 +10,7 @@
     "email": {
         "host": "smtp.gmail.com:25",
         "user": "email address used to send recovery emails",
-        "pw": "My super secret password of my email address"
+        "pw": "My super secret password of my email address",
+        "url": "URL of site (used for email links) ending without /"
     }
 }

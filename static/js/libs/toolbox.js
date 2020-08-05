@@ -39,9 +39,8 @@ class Toolbox {
 
     sreq(event, callback, headers) {
         clearTimeout(this.uReqTimer);
-        if (!session.check()) {
+        if (!session.refresh()) {
             this.sClose();
-            session.showLogIn('message-square', 'Login to continue', 'info');
             return;
         }
         this.timeoutLoading();
@@ -60,9 +59,8 @@ class Toolbox {
     }
 
     screq(event, callback, headers) {
-        if (!session.check()) {
+        if (!session.refresh()) {
             this.sClose();
-            session.showLogIn('message-square', 'Login to continue', 'info');
             return;
         }
         if (this.socket == null || this.socket.disconnected) {
@@ -92,7 +90,6 @@ class Toolbox {
      */
     req(url, callback, headers) {
         this.timeoutLoading();
-        session.refresh();
         let req = new XMLHttpRequest();
         req.open("GET", url, true);
         if (headers !== undefined) {
@@ -293,6 +290,9 @@ class Toolbox {
         this.navbar = false;
     }
 
+    scrollTop() {
+        document.body.scroll({ top: 0, left: 0, behavior: 'smooth' });
+    }
 
 
     //////// ENCODERS ////////

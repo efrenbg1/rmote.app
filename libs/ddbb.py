@@ -16,15 +16,17 @@ class SettingsDB:
 
 
 class SettingsEmail:
-    def __init__(self, host, port, user, pw):
+    def __init__(self, host, port, user, pw, url):
         self.host = host
         self.port = port
         self.user = user
         self.pw = pw
+        self.url = url
 
 
 settings = SettingsDB("127.0.0.1", "root", "", "rmote", "127.0.0.1")
-email = SettingsEmail("smtp.gmail.com", 25, "name@domain.com", "password")
+email = SettingsEmail("smtp.gmail.com", 25,
+                      "name@domain.com", "password", "http://localhost")
 
 with open('settings.json', "r") as f:
     param = json.load(f)
@@ -37,6 +39,7 @@ with open('settings.json', "r") as f:
     email.port = param['email']['port']
     email.user = param['email']['user']
     email.pw = param['email']['pw']
+    email.url = param['email']['url']
 
 
 def checkPW(user, pw):

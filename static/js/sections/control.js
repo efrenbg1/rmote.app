@@ -8,7 +8,6 @@ class Control {
     }
 
     list() {
-        session.refresh();
         tools.sreq('/control/list', function (status, response) {
             if (status !== 200) {
                 tools.showFailure(status);
@@ -68,7 +67,7 @@ class Control {
     }
 
     updateCards(response) {
-        if (!nav.section().includes('control')) return;
+        if (!ui.section().includes('control')) return;
         var status = {
             null: '/img/papelito.png',
             "0": '/img/off.jpg',
@@ -195,10 +194,12 @@ class controlTemplates {
 
 
 var control = new Control();
-nav.modules["control"] = {
+ui.modules["control"] = {
+    modules: [],
     class: function () {
         return control;
     },
     icon: "sliders",
-    name: "Control center"
+    translation: "Control center",
+    onList: function () { }
 };

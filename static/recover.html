@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta charset="UTF-8">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Web app for controlling lemonSW boards.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+
+    <title>LemonSW - Recover password</title>
+
+    <link rel="apple-touch-icon" sizes="180x180" href="/icon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/icon/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="mask-icon" href="/icon/safari-pinned-tab.svg" color="#5bbad5">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <meta name="theme-color" content="#ffffff">
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+        integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <style>
+        body {
+            background: #FFEB3B;
+            background: -webkit-linear-gradient(right, #FFEB3B, #8DC26F);
+            background: -moz-linear-gradient(right, #FFEB3B, #8DC26F);
+            background: -o-linear-gradient(right, #FFEB3B, #8DC26F);
+            background: linear-gradient(to left, #FFEB3B, #8DC26F);
+        }
+
+        .btn-huge {
+            padding-top: 20px;
+            padding-bottom: 20px;
+            font-size: 30px;
+        }
+
+        p {
+            margin-left: 40px;
+            margin-right: 40px;
+            margin-top: 10px;
+        }
+
+        .jumbotron {
+            background: #FFFFFF;
+            text-align: center;
+            box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24);
+        }
+
+        @keyframes scaleAnimation {
+            0% {
+                opacity: 0;
+                transform: scale(1.5);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes drawCircle {
+            0% {
+                stroke-dashoffset: 151px;
+            }
+
+            100% {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        @keyframes drawCheck {
+            0% {
+                stroke-dashoffset: 36px;
+            }
+
+            100% {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        @keyframes fadeOut {
+            0% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        #successAnimationCircle {
+            stroke-dasharray: 151px 151px;
+            stroke: #28A645;
+        }
+
+        #successAnimationCheck {
+            stroke-dasharray: 36px 36px;
+            stroke: #28A645;
+        }
+
+        #successAnimationResult {
+            fill: #28A645;
+            opacity: 0;
+        }
+
+        #successAnimation.animated {
+            animation: 1s ease-out 0s 1 both scaleAnimation;
+
+            #successAnimationCircle {
+                animation: 1s cubic-bezier(0.77, 0, 0.175, 1) 0s 1 both drawCircle,
+                    0.3s linear 0.9s 1 both fadeOut;
+            }
+
+            #successAnimationCheck {
+                animation: 1s cubic-bezier(0.77, 0, 0.175, 1) 0s 1 both drawCheck,
+                    0.3s linear 0.9s 1 both fadeOut;
+            }
+
+            #successAnimationResult {
+                animation: 0.3s linear 0.9s both fadeIn;
+            }
+        }
+    </style>
+</head>
+
+<body class="container">
+    <div class="row d-flex justify-content-center">
+        <div class="col-sm-10 mt-5">
+            <div class="jumbotron">
+                <div class="container" id="form">
+                    <div class="row">
+                        <div class="col-sm text-left">
+                            <a class="lead text-left" href="/"><i data-feather="arrow-left"></i>
+                                Return to rmote.app</a>
+                        </div>
+                    </div>
+                    <hr class="my-4">
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <img alt="Logo" src="/icon/android-chrome-192x192.png" width="150" class="mb-2">
+                        </div>
+                        <div class="col-sm-8 text-left">
+                            <p class="lead">
+                            <h4 class="mb-4">Recover account's password:</h4>
+                            To recover your password, click on the link sent to your inbox after filling this form.
+                        </div>
+                    </div>
+                    <hr class="my-4">
+                    <div class="alert alert-danger" role="alert" id="error">
+                    </div>
+                    <div class="alert alert-warning" id="notfound" role="alert">
+                        The email address you entered is invalid. Please try again
+                    </div>
+                    <div class="row d-flex justify-content-center mb-3 mt-2">
+                        <div class="col-sm-10 text-left">
+                            <form>
+                                <div class="form-group">
+                                    <label for="email">Email address:</label>
+                                    <input type="email" class="form-control" id="email" value="efren@boyarizo.es"
+                                        data-toggle="tooltip" data-placement="top" title="Input a valid email address">
+                                    <small class="form-text text-muted">If you don't remember your email, please contact
+                                        me at <a href="mailto:efren@boyarizo.es">efren@boyarizo.es</a></small>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="row d-flex justify-content-center mt-2">
+                        <div class="col-sm-10 text-right">
+                            <button type="submit" class="btn btn-primary" onclick="recover()">Recover</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="container" id="recover">
+                    <div class="row">
+                        <div class="col-sm text-left">
+                            <a class="lead text-left" href="/"><i data-feather="arrow-left"></i>
+                                Return to rmote.app</a>
+                        </div>
+                    </div>
+                    <hr class="my-4">
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <img alt="Logo" src="/icon/android-chrome-192x192.png" width="150" class="mb-2">
+                        </div>
+                        <div class="col-sm-8 text-left">
+                            <p class="lead">
+                            <h4 class="mb-4">Recover account's password:</h4>
+                            Input the new password to use for your account.
+                        </div>
+                    </div>
+                    <hr class="my-4">
+                    <div class="row d-flex justify-content-center mb-3 mt-2">
+                        <div class="col-sm-10 text-left">
+                            <form>
+                                <div class="form-group">
+                                    <label for="email">New password:</label>
+                                    <input type="password" class="form-control" id="password1" data-toggle="tooltip"
+                                        data-placement="top" title="Input a valid email address">
+                                </div>
+                                <div class="form-group">
+                                    <label for="email">Repeat password:</label>
+                                    <input type="password" class="form-control" id="password2" data-toggle="tooltip"
+                                        data-placement="top" title="Input a valid email address">
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="row d-flex justify-content-center mt-2">
+                        <div class="col-sm-10 text-right">
+                            <button type="submit" class="btn btn-primary" onclick="change()">Change</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="container" id="loading" style="display: none;">
+                    <div class="my-5" style="font-size: 2rem;">Loading...</div>
+                    <div class="my-5">
+                        <div class="spinner-border text-warning" style="width: 5rem; height: 5rem;" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="container hide" id="done" style="display: none;">
+                    <svg id="successAnimation" class="animated" xmlns="http://www.w3.org/2000/svg" width="250"
+                        height="250" viewBox="0 0 70 70">
+                        <path id="successAnimationResult" fill="#D8D8D8"
+                            d="M35,60 C21.1928813,60 10,48.8071187 10,35 C10,21.1928813 21.1928813,10 35,10 C48.8071187,10 60,21.1928813 60,35 C60,48.8071187 48.8071187,60 35,60 Z M23.6332378,33.2260427 L22.3667622,34.7739573 L34.1433655,44.40936 L47.776114,27.6305926 L46.223886,26.3694074 L33.8566345,41.59064 L23.6332378,33.2260427 Z" />
+                        <circle id="successAnimationCircle" cx="35" cy="35" r="24" stroke="#979797" stroke-width="2"
+                            stroke-linecap="round" fill="transparent" />
+                        <polyline id="successAnimationCheck" stroke="#979797" stroke-width="2"
+                            points="23 34 34 43 47 27" fill="transparent" />
+                    </svg>
+                    <h1 class="display-4">All done!</h1>
+                    <p class="lead">Check your email inbox for the instructions on how to reset your password.</p>
+                    <p><small>If you have not received any email kindly <b>check your spam folder</b>.</small></p>
+                    <div class="row mt-4">
+                        <div class="col-sm text-center">
+                            <a class="lead text-left" href="/"><i data-feather="arrow-left"></i>
+                                Return to rmote.app</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+    integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+    crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+    integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+    crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
+    integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI"
+    crossorigin="anonymous"></script>
+<script src="https://unpkg.com/feather-icons@4.28.0/dist/feather.min.js" crossorigin="anonymous"></script>
+<script>
+    $('#error').hide();
+    $('#notfound').hide();
+    feather.replace();
+
+    var url = new URL(location.href);
+    if (url.searchParams.get('confirm')) {
+        $('#form').hide();
+        $('#recover').show();
+    } else {
+        $('#form').show();
+        $('#recover').hide();
+    }
+
+    function req(url, callback, headers) {
+        let req = new XMLHttpRequest();
+        req.open("GET", url, true);
+        if (headers !== undefined) {
+            let keys = Object.keys(headers);
+            for (let i = 0; i < keys.length; i++) {
+                req.setRequestHeader(keys[i], headers[keys[i]]);
+            }
+        }
+        req.onreadystatechange = function () {
+            if (req.readyState == 4) {
+                callback(req.status, req.response);
+            }
+        }.bind(this);
+        req.send();
+    }
+
+    function recover() {
+        var email = document.getElementById('email').value;
+        const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        email = String(email).toLowerCase();
+        if (!re.test(email)) {
+            $('#email').tooltip('show');
+            return;
+        }
+        $('#email').tooltip('hide');
+        $('#loading').show();
+        $('#form').hide();
+        req("/recover/add", function (status, response) {
+            $('#loading').hide();
+            if (status == 200 && response == "done") {
+                $('#done').show();
+            } else if (status == 404) {
+                $('#notfound').show();
+                $('#error').hide();
+                $('#form').show();
+            } else {
+                $('#error')[0].innerHTML = `Something went wrong (` + status + `)!<br><small>If the problem persists contact
+                            me at <a href="mailto:efren@boyarizo.es">efren@boyarizo.es</a></small>`;
+                $('#notfound').hide();
+                $('#error').show();
+                $('#form').show();
+            }
+        }, { 'Username': email });
+    }
+
+    function change() {
+        var email = document.getElementById('email').value;
+        const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        email = String(email).toLowerCase();
+        if (!re.test(email)) {
+            $('#email').tooltip('show');
+            return;
+        }
+        $('#email').tooltip('hide');
+        $('#loading').show();
+        $('#form').hide();
+        req("/recover/add", function (status, response) {
+            $('#loading').hide();
+            if (status == 200 && response == "done") {
+                $('#done').show();
+            } else if (status == 404) {
+                $('#notfound').show();
+                $('#error').hide();
+                $('#form').show();
+            } else {
+                $('#error')[0].innerHTML = `Something went wrong (` + status + `)!<br><small>If the problem persists contact
+                            me at <a href="mailto:efren@boyarizo.es">efren@boyarizo.es</a></small>`;
+                $('#notfound').hide();
+                $('#error').show();
+                $('#form').show();
+            }
+        }, { 'Username': email });
+    }
+
+</script>
+
+</html>

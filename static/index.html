@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>LemonSW dashboard</title>
+    <title>lemonSW dashboard</title>
     <link rel="apple-touch-icon" sizes="180x180" href="/icon/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/icon/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/icon/favicon-16x16.png">
@@ -30,21 +30,21 @@
                         <div class="post-logo"></div>
                         <ul class="nav flex-column">
                             <li class="nav-item">
-                                <span class="fake-link nav-link active" onclick="nav.load('control')" id="control"
+                                <span class="fake-link nav-link active" onclick="ui.load('control')" id="control"
                                     title="Control the lemonSW">
                                     <i data-feather="sliders"></i>
                                     Control
                                 </span>
                             </li>
                             <li class="nav-item">
-                                <span class="fake-link nav-link mt-2" onclick="nav.load('manager')" id="manager"
+                                <span class="fake-link nav-link mt-2" onclick="ui.load('manager')" id="manager"
                                     title="Change lemonSW's settings">
                                     <i data-feather="edit"></i>
                                     Manager
                                 </span>
                             </li>
                             <li class="nav-item">
-                                <span class="fake-link nav-link mt-2" onclick="nav.load('settings')" id="settings"
+                                <span class="fake-link nav-link mt-2" onclick="ui.load('settings')" id="settings"
                                     title="Change account settings">
                                     <i data-feather="settings"></i>
                                     Settings
@@ -112,7 +112,8 @@
         </div>
     </div>
 
-    <div aria-live="polite" aria-atomic="true" class="d-flex justify-content-center align-items-center toast-bottom">
+    <div aria-live="polite" aria-atomic="true" class="d-flex justify-content-center align-items-center"
+        style="left: 50%; position: absolute; transform: translate(-50%, 0px); top: 0.5rem;">
         <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" id="toast">
             <div class="toast-header">
                 <div id="toastContent"></div>
@@ -152,8 +153,12 @@
                                 title="LogIn"><i data-feather="log-in"></i>&nbsp;Login</button>
                         </div>
                         <h6
-                            class="sidebar-heading d-flex justify-content-center align-items-center mb-3 mt-4 text-muted">
-                            <small>Not registered?&nbsp;<a href="/register.html">Create an account</a></small>
+                            class="sidebar-heading d-flex justify-content-around align-items-center mb-3 mt-4 text-muted">
+                            <small class="text-center">Not registered?&nbsp;<a href="/register.html">Create an
+                                    account</a></small>
+                            <small class="mx-1"><b>|</b></small>
+                            <small class="text-center">Forgot password?&nbsp;<a href="/recover.html">Reset
+                                    password</a></small>
                         </h6>
                     </form>
                     <div class="hr-sect text-muted mt-5 mb-2">
@@ -222,7 +227,7 @@
                         </div>
                         <div class="text-center mb-2">
                             <button type=button class="btn btn-outline-secondary" data-dismiss="modal"
-                                onclick="nav.reconstruct()">
+                                onclick="ui.reconstruct()">
                                 <center><img alt="Recargar la página" src="/img/refresh.svg" height="30" width="30"
                                         class="m-0"></center>&nbsp;Retry&nbsp;
                             </button>
@@ -370,7 +375,7 @@
 <script src="/libs.min.js?hash={% if hash %}{{ hash }}{% endif %}"></script>
 <script src="/sections.min.js?hash={% if hash %}{{ hash }}{% endif %}"></script>
 <script>
-    nav.reconstruct();
+    ui.reconstruct();
 </script>
 
 </html>
