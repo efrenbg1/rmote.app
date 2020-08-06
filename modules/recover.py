@@ -22,8 +22,8 @@ def recoverAdd():
     if q[0][2] != None:
         valid = q[0][2] + timedelta(hours=1)
         valid = valid.timestamp()
-        # if q[0][1] == 'password' and (valid - time.time()) > 0:
-        #    return "done"
+        if q[0][1] == 'password' and (valid - time.time()) > 0:
+            return "done"
     confirm = ''.join(
         [random.choice(string.ascii_letters + string.digits) for _ in range(64)])
     ddbb.query(

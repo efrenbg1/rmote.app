@@ -1,36 +1,51 @@
-from modules import modules
-from libs import ddbb, sessions, password
-from flask import Flask, request
-import base64, json, string, re
+from libs import ddbb, password
+from flask import request
+from libs.flask import app
+import base64
+import json
+import string
+import re
 
 
-@modules.hub.route('/register')
+@app.route('/register')
 def register():
-    try:
-        user = base64.b64decode(request.headers.get("email")).decode('utf-8').lower()
-        pw = base64.b64decode(request.headers.get("pw")).decode('utf-8')
-        mac = request.headers.get("mac").upper()
-        q = ddbb.query("SELECT * FROM boards WHERE mac=%s LIMIT 1", mac)
-        if q[0][0] == mac: #check if board exists
-            if re.match("^[A-Za-z0-9_-]*$", pw) and 7 < len(pw) < 21 and re.match("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$", user):
-                q = ddbb.query("SELECT id, pw FROM user WHERE username=%s", user)
-                if len(q) == 0: #new user
-                    q = ddbb.query('SELECT user FROM acls WHERE mac=%s', mac)
-                    if len(q) == 0:
-                        insert = ddbb.insert('INSERT INTO user (username, pw) VALUES (%s, %s)', user,
-                                             password.createHash(pw))
-                        if insert != None:
-                            q = ddbb.insert("INSERT INTO acls (mac, user, name, cluster) VALUES (%s, %s, 'Unnamed', 0)",
-                                            mac, insert)
-                            if q != None:
-                                return str(json.dumps({'Done': '1'}))
-                elif q[0][1] == "": #pending for registration
-                    q = ddbb.query('SELECT mac FROM share WHERE user=%s', q[0][0])
-                    if q[0][0] == mac: #user pending and its mac match
-                        update = ddbb.query('UPDATE user SET pw=%s WHERE username=%s', password.createHash(pw), user)
-                        if update != None:
-                            return str(json.dumps({'Done': '1'}))
-    except Exception as e:
-        print(e)
-        pass
-    return "400 (Bad request)", 400
+    user = request.headers.get('Username')
+    pw = request.headers.get('Password')
+    mac = request.headers.get('MAC')
+
+    if user is None or mac is None or pw is None:
+        return "400 (Bad request)", 400
+
+    user = base64.b64decode(user).decode('utf-8').lower()
+    pw = base64.b64decode(pw).decode('utf-8')
+    mac = base64.b64decode(mac).decode('utf-8').upper()
+
+    if len(pw) < 8 or len(pw) > 20:
+        return "400 (Bad request)", 400
+
+    if not re.match("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$", user):
+        return "400 (Bad request)", 400
+
+    q = ddbb.query(
+        "SELECT pw FROM user WHERE username=%s", user)
+    if len(q) > 0:
+        if len(q[0][0]) == 0:
+            return "208 (Already Reported)", 208
+        else:
+            return "400 (Bad request)", 400
+
+    q = ddbb.query(
+        "SELECT b.mac, a.mac FROM boards AS b LEFT JOIN acls AS a ON b.mac=a.mac WHERE b.mac=%s", mac)
+    if len(q) == 0:
+        return "404 (Not Found)", 404
+    if q[0][1] != None:
+        return "208 (Already Reported)", 208
+
+    valid = q[0][1] + timedelta(hours=1)
+    valid = valid.timestamp()
+    if (valid - time.time()) < 0:
+        return "410 (Gone)", 410
+
+    ddbb.query("UPDATE user SET confirm=NULL, confirmType=NULL, confirmData=NULL, confirmValid=NULL, pw=%s WHERE username=%s",
+               password.createHash(pw), user)
+    return "done"
