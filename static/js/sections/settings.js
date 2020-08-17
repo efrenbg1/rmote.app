@@ -324,7 +324,7 @@ class settingsTemplates {
     constructor() {
 
         this.menuCard = `
-    <div class="col-sm-4 mb-3" onclick="settings.see({{id}})">
+    <div class="col-sm-4 mb-3" onclick="settings.see({{id}})" style="cursor: pointer;">
         <div class="card">
           <div class="card-body ">
           <center>

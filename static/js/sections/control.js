@@ -35,13 +35,14 @@ class Control {
                     });
                 }
             }
-            tools.draw(this.templates.grid.format(cards));
-            this.updateCards(response['own']);
-            this.updateCards(response['share']);
             clearInterval(this.interval);
-            this.interval = setInterval(function () {
-                control.update();
-            }, 1000)
+            ui.draw('grid', this.templates.grid.format(cards), function () {
+                this.updateCards(response['own']);
+                this.updateCards(response['share']);
+                this.interval = setInterval(function () {
+                    control.update();
+                }, 1000)
+            }.bind(this));
         }.bind(this));
     }
 
@@ -177,7 +178,7 @@ class controlTemplates {
 								aria-haspopup="true" aria-expanded="false">
 								<i data-feather="chevron-up"></i>
 							</button>
-							<div class="dropdown-menu">
+							<div class="dropdown-menu dropdown-menu-right">
 								<a class="dropdown-item pl-3 mb-1" href="javascript:control.action('{{mac}}', '8')"><i data-feather="download-cloud"></i>&nbsp;&nbsp;Update firmware</a>
 								<a class="dropdown-item pl-3 mb-1" href="javascript:control.action('{{mac}}', '9')"><i data-feather="activity"></i>&nbsp;&nbsp;Recovery</a>
 								<a class="dropdown-item pl-3" href="javascript:control.action('{{mac}}', '1')"><i data-feather="x-octagon"></i>&nbsp;&nbsp;Force off</a>

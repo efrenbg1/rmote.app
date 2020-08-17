@@ -62,7 +62,7 @@ class UI {
         window.addEventListener('popstate', this.popstate.bind(this));
         window.onbeforeunload = function () {
             if (this.onUnload != undefined) this.onUnload();
-            if (!this.checkChanges()) return "";
+            if (this.changed()) return "";
         }.bind(this);
     }
 
@@ -90,7 +90,7 @@ class UI {
 
         this.steps = ui.order - event.state.order;
         if (now[0] != old[0]) { // Main module changed
-            if (!this.force && !this.checkChanges()) {
+            if (!this.force && this.changed()) {
                 this.onUnsaved();
                 window.history.go(this.steps);
                 this.discardSteps = this.steps;
@@ -108,7 +108,7 @@ class UI {
             if (old.length > now.length) { // Went back
                 if (old.length > 2) {
                     for (var i = old.length - 2; i > now.length - 1; i = i - 2) {
-                        if (!this.force && !this.modules[old[i]].class().checkChanges()) {
+                        if (!this.force && this.modules[old[i]].class().changed()) {
                             this.onUnsaved();
                             window.history.go(this.steps);
                             this.discardSteps = this.steps;
@@ -117,7 +117,7 @@ class UI {
                         }
                     }
                 } else {
-                    if (!this.force && !this.main.class().checkChanges()) {
+                    if (!this.force && this.main.class().changed()) {
                         this.onUnsaved();
                         window.history.go(this.steps);
                         this.discardSteps = this.steps;
@@ -161,7 +161,11 @@ class UI {
                         }
                         break;
                 }
-            } else if (old.length < now.length) { // Going forward
+            } else if (old.length == 1) { // Going back with the same main module
+                var f = function () {
+                    this.reconstruct();
+                }
+            } else { // Going forward
                 switch (now.length) {
                     case 2:
                         var f = function () {
@@ -223,16 +227,16 @@ class UI {
      * Verify if the modules on display have unsaved changes
      * @returns {boolean} - True if everything is saved
     */
-    checkChanges() {
-        if (this.state.length == 1) return true;
+    changed() {
+        if (this.state.length == 1) return false;
         for (var i = 0; i < this.state.length; i = i + 2) {
             try {
-                if (!this.modules[this.state[i]].class().checkChanges()) return false;
+                if (this.modules[this.state[i]].class().changed()) return true;
             } catch (e) {
                 console.error(e);
             }
         }
-        return true;
+        return false;
     }
 
 
@@ -469,7 +473,7 @@ class UI {
      * @param {string} module - Name of the module to load
     */
     load(module) {
-        if (!this.checkChanges()) {
+        if (this.changed()) {
             this.setSection([module]);
             this.onUnsaved();
             window.history.go(-1);
@@ -544,15 +548,16 @@ class UI {
     see(module, id) {
         if (id === null) id = 0;
 
-        if (module != null) {
+        if (module == null) {
+            module = this.section()[0];
+            if (this.section().length == 1) this.pushSection([id]);
+        } else {
             if (!this.main.submodules.includes(module)) throw new Error(`Module ${module} not loaded! Make sure to include it in modules array`);
             if (this.section().length > 1) {
                 this.pushSection([module, id]);
             } else {
                 this.pushSection([id]);
             }
-        } else {
-            module = this.section()[0]
         }
 
         this.animationStart = performance.now();
@@ -666,5 +671,3 @@ class UI {
         }
     }
 }
-
-

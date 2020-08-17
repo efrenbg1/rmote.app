@@ -7,6 +7,12 @@ try {
         defaultPath: ["control"],
         activeClass: "active",
         dismissAnimation: function () {
+            clearInterval(control.interval);
+            if ($(window).width() <= 930) {
+                tools.hide("navbar");
+                tools.show("content");
+                tools.hide("blank");
+            }
             $('.modal').modal('hide');
             $('#grid')[0].setAttribute('class', 'slide-out');
         },
