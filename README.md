@@ -7,7 +7,7 @@ Built using: python 3.8 with VSCode<br>
 Libraries: Flask 1.1.1, DBUtils 1.3, PyMySQL 0.9.3, checksumdir 1.1.7, jsmin 2.2.2, mailer 0.8.1, termcolor==1.1.0, flask-socketio<br>
 <br>
 ## License
-Copyright © 2020 Efrén Boyarizo <efren@boyarizo.es>
+Copyright © 2020 Efrén Boyarizo <efren@boyarizo.es><br>
 This work is free. You can redistribute it and/or modify it under the
 terms of the Do What The Fuck You Want To Public License, Version 2,
 as published by Sam Hocevar. See http://www.wtfpl.net/ for more details.
