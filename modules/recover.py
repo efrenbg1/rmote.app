@@ -1,4 +1,4 @@
-from libs import ddbb, password
+from libs import ddbb, password, limiter
 from libs.flask import app
 from flask import request
 import string
@@ -11,12 +11,15 @@ import base64
 
 @app.route('/recover/add')
 def recoverAdd():
+    if not limiter.check():
+        return "409 (Conflict)", 409
+    limiter.count(login=True)
     user = request.headers.get('Username')
     if user is None:
         return "400 (Bad request)", 400
     user = base64.b64decode(user).decode('utf-8')
     q = ddbb.query(
-        "SELECT confirm, confirmType, confirmValid FROM user WHERE username=%s", user)
+        "SELECT confirm, confirmType, confirmValid, pw FROM user WHERE username=%s", user)
     if len(q) == 0:
         return "404 (Not Found)", 404
     if q[0][2] != None:
@@ -35,6 +38,9 @@ def recoverAdd():
 
 @app.route('/recover/change')
 def recoverChange():
+    if not limiter.check():
+        return "409 (Conflict)", 409
+    limiter.count(login=True)
     user = request.headers.get('Username')
     confirm = request.headers.get('Confirm')
     pw = request.headers.get('Password')

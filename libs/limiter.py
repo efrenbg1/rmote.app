@@ -20,17 +20,11 @@ def get_ip():
 def count(login=False):
     ip = get_ip()
     if login:
-        d = {
-            'user': request.headers.get('Username'),
-            'pw': request.headers.get('pw')
-        }
-        hash = md5(json.dumps(d).encode()).hexdigest()
+        headers = json.dumps({k: v for k, v in request.headers.items()})
+        hash = md5(json.dumps(headers).encode()).hexdigest()
     else:
-        d = {
-            'user': request.cookies.get('Username'),
-            'session': request.cookies.get('Session')
-        }
-        hash = md5(json.dumps(d).encode()).hexdigest()
+        cookies = json.dumps({k: v for k, v in request.headers.items()})
+        hash = md5(json.dumps(cookies).encode()).hexdigest()
     with llimiter:
         limit = limiter.get(ip)
         if limit == None or (time.time() - limit[1]) >= 0:

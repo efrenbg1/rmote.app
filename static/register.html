@@ -258,6 +258,18 @@
                 </div>
                 <div class="alert alert-danger" role="alert" id="error2" style="display: none;">
                 </div>
+                <div class="container" id="toomany" style="display: none;">
+                    <div class="row">
+                        <div class="col-sm text-left">
+                            <a class="lead text-left" href="/"><i data-feather="arrow-left"></i>
+                                Return to rmote.app</a>
+                        </div>
+                    </div>
+                    <hr class="my-4">
+                    <img alt="Error" height="120" width="120" class="mb-3 mt-4" src="/img/405_2.png">
+                    <p class="lead">You've reached the maximum number of tries. Wait <b id="wait">30</b> seconds before
+                        retrying.</p>
+                </div>
             </div>
         </div>
     </div>
@@ -276,6 +288,25 @@
     $('#error').hide();
     $('#notfound').hide();
     feather.replace();
+
+    var interval = null;
+    var timeout = null;
+    function toomany() {
+        $('#form').hide();
+        $('#toomany').show();
+        clearInterval(interval);
+        timeout = 30;
+        $('#wait')[0].innerText = timeout;
+        interval = setInterval(function () {
+            if (timeout < 1) {
+                clearInterval(interval);
+                $('#toomany').hide();
+                $('#form').show();
+            }
+            timeout--;
+            $('#wait')[0].innerText = timeout;
+        }, 1000);
+    }
 
     function encode(string) {
         return btoa(unescape(encodeURIComponent(string)));
@@ -339,9 +370,12 @@
                 $('#notfound').show();
                 $('#error').hide();
                 $('#form').show();
+            } else if (status == 409) {
+                toomany();
             } else {
                 $('#error')[0].innerHTML = `Something went wrong (` + status + `)!<br><small>If the problem persists contact
                             me at <a href="mailto:efren@boyarizo.es">efren@boyarizo.es</a></small>`;
+
                 $('#notfound').hide();
                 $('#error').show();
                 $('#form').show();
@@ -365,6 +399,10 @@
                             me at <a href="mailto:efren@boyarizo.es">efren@boyarizo.es</a></small>`;
                 if (status == 410) msg = `The link has expired! Please <a href="/register.html">try again</a>.`;
                 if (status == 404) msg = `Could not find the account! Please <a href="/register.html">try again</a>.`;
+                if (status == 409) {
+                    toomany();
+                    return;
+                }
                 $('#error2')[0].innerHTML = msg
                 $('#error2').show();
             }

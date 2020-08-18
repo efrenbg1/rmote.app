@@ -124,7 +124,10 @@ def logout():
     ddbb.query("UPDATE user SET session=NULL WHERE username=%s", user)
     with lsid:
         sids = sid.get(user)
-        del sid[user]
+        try:
+            del sid[user]
+        except Exception:
+            pass
     if sids is not None:
         socketio.start_background_task(
             disconnect_user, sids)

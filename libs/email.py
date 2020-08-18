@@ -26,3 +26,15 @@ def registerConfirm(to, path):
     sender = Mailer(email.host, port=email.port,
                     usr=email.user, pwd=email.pw, use_tls=True)
     sender.send(msg)
+
+
+def registerShare(user, to, path):
+    with open("emails/share.min.htm") as f:
+        html = Template(f.read())
+    msg = Message(From="rmote.app", To=to)
+    msg.Subject = "rmote.app | Complete registration"
+    link = email.url + path
+    msg.Html = html.render(user=user, link=link)
+    sender = Mailer(email.host, port=email.port,
+                    usr=email.user, pwd=email.pw, use_tls=True)
+    sender.send(msg)

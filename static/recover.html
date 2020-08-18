@@ -161,19 +161,17 @@
                     <div class="alert alert-danger" role="alert" id="error">
                     </div>
                     <div class="alert alert-warning" id="notfound" role="alert">
-                        The email address you entered is invalid. Please try again
+                        The email address you've entered is invalid. Please try again
                     </div>
                     <div class="row d-flex justify-content-center mb-3 mt-2">
                         <div class="col-sm-10 text-left">
-                            <form>
-                                <div class="form-group">
-                                    <label for="email">Email address:</label>
-                                    <input type="email" class="form-control" id="email" data-toggle="tooltip"
-                                        data-placement="top" title="Input a valid email address">
-                                    <small class="form-text text-muted">If you don't remember your email, please contact
-                                        me at <a href="mailto:efren@boyarizo.es">efren@boyarizo.es</a></small>
-                                </div>
-                            </form>
+                            <div class="form-group">
+                                <label for="email">Email address:</label>
+                                <input type="email" class="form-control" id="email" data-toggle="tooltip"
+                                    data-placement="top" title="Input a valid email address">
+                                <small class="form-text text-muted">If you don't remember your email, please contact
+                                    me at <a href="mailto:efren@boyarizo.es">efren@boyarizo.es</a></small>
+                            </div>
                         </div>
                     </div>
                     <div class="row d-flex justify-content-center mt-2">
@@ -196,7 +194,7 @@
                         </div>
                         <div class="col-sm-8 text-left">
                             <p class="lead">
-                            <h4 class="mb-4">Recover account's password:</h4>
+                            <h4 class="mb-4">Change account's password:</h4>
                             Enter the new password to use for your account.
                         </div>
                     </div>
@@ -205,18 +203,16 @@
                     </div>
                     <div class="row d-flex justify-content-center mb-3 mt-2">
                         <div class="col-sm-10 text-left">
-                            <form>
-                                <div class="form-group">
-                                    <label for="email">New password:</label>
-                                    <input type="password" class="form-control" id="password1" data-toggle="tooltip"
-                                        data-placement="top" title="8-20 characters">
-                                </div>
-                                <div class="form-group">
-                                    <label for="email">Repeat password:</label>
-                                    <input type="password" class="form-control" id="password2" data-toggle="tooltip"
-                                        data-placement="top" title="Passwords do not match">
-                                </div>
-                            </form>
+                            <div class="form-group">
+                                <label for="email">New password:</label>
+                                <input type="password" class="form-control" id="password1" data-toggle="tooltip"
+                                    data-placement="top" title="8-20 characters">
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Repeat password:</label>
+                                <input type="password" class="form-control" id="password2" data-toggle="tooltip"
+                                    data-placement="top" title="Passwords do not match">
+                            </div>
                         </div>
                     </div>
                     <div class="row d-flex justify-content-center mt-2">
@@ -271,6 +267,18 @@
                         </div>
                     </div>
                 </div>
+                <div class="container" id="toomany" style="display: none;">
+                    <div class="row">
+                        <div class="col-sm text-left">
+                            <a class="lead text-left" href="/"><i data-feather="arrow-left"></i>
+                                Return to rmote.app</a>
+                        </div>
+                    </div>
+                    <hr class="my-4">
+                    <img alt="Error" height="120" width="120" class="mb-3 mt-4" src="/img/405_2.png">
+                    <p class="lead">You've reached the maximum number of tries. Wait <b id="wait">30</b> seconds before
+                        retrying.</p>
+                </div>
             </div>
         </div>
     </div>
@@ -300,6 +308,25 @@
     } else {
         $('#add').show();
         $('#change').hide();
+    }
+
+    var interval = null;
+    var timeout = null;
+    function toomany(id) {
+        $('#' + id).hide();
+        $('#toomany').show();
+        clearInterval(interval);
+        timeout = 3;
+        $('#wait')[0].innerText = timeout;
+        interval = setInterval(function () {
+            if (timeout < 1) {
+                clearInterval(interval);
+                $('#toomany').hide();
+                $('#' + id).show();
+            }
+            timeout--;
+            $('#wait')[0].innerText = timeout;
+        }, 1000);
     }
 
     function encode(string) {
@@ -342,6 +369,8 @@
                 $('#notfound').show();
                 $('#error').hide();
                 $('#add').show();
+            } else if (status == 409) {
+                toomany('add');
             } else {
                 $('#error')[0].innerHTML = `Something went wrong (` + status + `)!<br><small>If the problem persists contact
                             me at <a href="mailto:efren@boyarizo.es">efren@boyarizo.es</a></small>`;
@@ -376,6 +405,10 @@
                             me at <a href="mailto:efren@boyarizo.es">efren@boyarizo.es</a></small>`;
                 if (status == 410) msg = `The link has expired! Please <a href="/recover.html">try again</a>.`;
                 if (status == 404) msg = `Could not find the account! Please <a href="/recover.html">try again</a>.`;
+                if (status == 409) {
+                    toomany('change');
+                    return;
+                }
                 $('#error2')[0].innerHTML = msg
                 $('#error2').show();
                 $('#change').show();

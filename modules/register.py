@@ -1,4 +1,4 @@
-from libs import ddbb, password
+from libs import ddbb, password, limiter
 from libs.flask import app
 from flask import request
 import string
@@ -12,6 +12,9 @@ import re
 
 @app.route('/register')
 def register():
+    if not limiter.check():
+        return "409 (Conflict)", 409
+    limiter.count(login=True)
     user = request.headers.get('Username')
     pw = request.headers.get('Password')
     mac = request.headers.get('MAC')
@@ -63,13 +66,16 @@ def register():
     else:
         ddbb.query(
             "INSERT INTO user (username, pw, confirm, confirmType, confirmData, confirmValid) VALUES (%s, '', %s, 'register', %s, now())", user, confirm, data)
-    email.registerConfirm("efren@boyarizo.es", "/register.html?confirm={}&email={}".format(
+    email.registerConfirm(user, "/register.html?confirm={}&email={}".format(
         confirm, base64.b64encode(user.encode('utf-8')).decode('utf-8')))
     return "done"
 
 
 @app.route('/register/confirm')
 def registerConfirm():
+    if not limiter.check():
+        return "409 (Conflict)", 409
+    limiter.count(login=True)
     user = request.headers.get('Username')
     confirm = request.headers.get('Confirm')
 
