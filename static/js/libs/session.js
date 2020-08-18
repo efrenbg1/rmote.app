@@ -69,4 +69,20 @@ class Session {
             this.LogIn();
         }
     }
+
+    conflict() {
+        clearInterval(this.interval);
+        tools.hideModal('logging');
+        tools.alert(`You've reached the maximum number of tries. Wait <b id="wait">30</b> seconds before retrying.`)
+        this.timeout = 30;
+        this.interval = setInterval(function () {
+            if (session.timeout < 1) {
+                clearInterval(session.interval);
+                tools.hideModal('alert');
+                session.showLogIn("message-square", "Login to continue", "info");
+            }
+            session.timeout--;
+            $('#wait')[0].innerText = session.timeout;
+        }, 1000);
+    }
 }

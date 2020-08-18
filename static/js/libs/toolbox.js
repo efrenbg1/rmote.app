@@ -103,7 +103,7 @@ class Toolbox {
             if (req.readyState == 4) {
                 this.hideLoading();
                 if (req.status === 401) {
-                    session.showLogIn("message-square", "Login to continue", "info",);
+                    session.showLogIn("message-square", "Login to continue", "info");
                     return;
                 }
                 if (req.status === 429) {
@@ -129,6 +129,10 @@ class Toolbox {
                 }
                 if (req.status === 205) {
                     tools.showModal('update');
+                    return;
+                }
+                if (req.status === 409) {
+                    session.conflict();
                     return;
                 }
                 callback(req.status, req.response);

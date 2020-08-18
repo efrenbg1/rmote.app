@@ -7,12 +7,13 @@ import json
 
 
 class SettingsDB:
-    def __init__(self, host, user, pw, db, broker):
+    def __init__(self, host, user, pw, db, broker, proxy):
         self.host = host
         self.user = user
         self.pw = pw
         self.db = db
         self.broker = broker
+        self.proxy = proxy
 
 
 class SettingsEmail:
@@ -24,7 +25,7 @@ class SettingsEmail:
         self.url = url
 
 
-settings = SettingsDB("127.0.0.1", "root", "", "rmote", "127.0.0.1")
+settings = SettingsDB("127.0.0.1", "root", "", "rmote", "127.0.0.1", "127.0.0.1")
 email = SettingsEmail("smtp.gmail.com", 25,
                       "name@domain.com", "password", "http://localhost")
 
@@ -35,6 +36,7 @@ with open('settings.json', "r") as f:
     settings.pw = param['mysql']['pw']
     settings.db = param['mysql']['db']
     settings.broker = param['broker']
+    settings.proxy = param['proxy']
     email.host = param['email']['host']
     email.port = param['email']['port']
     email.user = param['email']['user']

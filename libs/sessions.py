@@ -5,7 +5,7 @@ import random
 import threading
 from datetime import datetime
 from termcolor import colored
-from libs import ddbb
+from libs import ddbb, limiter
 from libs.flask import socketio, app
 from flask import request
 from flask_socketio import disconnect
@@ -16,6 +16,8 @@ lsid = threading.Lock()
 
 @socketio.on('connect')
 def on_connect():
+    if not limiter.check():
+        return False
     if request.cookies.get('Content') != app.hash:
         return False
     if not check():
@@ -38,6 +40,8 @@ def on_connect():
 
 @app.route('/check')
 def sessionCheck():
+    if not limiter.check():
+        return "409 (Conflict)", 409
     if request.cookies.get('Content') != app.hash:
         return "205 (Reset Content)", 205
     if not check():
@@ -71,6 +75,8 @@ def start(user):
 
 @app.route('/login')
 def login():
+    if not limiter.check():
+        return "409 (Conflict)", 409
     user = request.headers.get('user')
     pw = request.headers.get('pw')
     if user is not None and pw is not None:
@@ -86,6 +92,7 @@ def login():
             response = {"username": user,
                         "cookie": start(user)}
             return str(json.dumps(response))
+    limiter.count(login=True)
     return "403 (Forbidden)", 403
 
 
@@ -101,6 +108,8 @@ def disconnect_user(sids):
 
 @app.route('/logout')
 def logout():
+    if not limiter.check():
+        return "409 (Conflict)", 409
     user = request.headers.get('Username')
     hash = request.headers.get('Session')
     if user is None or hash is None:
@@ -134,4 +143,5 @@ def check():
         session = None
     if session == hash:
         return True
+    limiter.count()
     return False

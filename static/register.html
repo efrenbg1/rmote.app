@@ -160,15 +160,19 @@
                     <hr class="my-4">
                     <div class="alert alert-danger" role="alert" id="error">
                     </div>
-                    <div class="alert alert-warning" id="notfound" role="alert">
-                        The email address you entered is invalid. Please try again
+                    <div class="alert alert-warning text-left" id="notfound" role="alert">
+                        <b>Invalid email or MAC address.</b> This could be because the email is already registered or
+                        the board is
+                        in use by another user. If you think this is an error please contact
+                        me at <a href="mailto:efren@boyarizo.es">efren@boyarizo.es</a></small>
                     </div>
                     <div class="row d-flex justify-content-center my-2">
                         <div class="col-sm-10 text-left">
                             <div class="form-group">
                                 <label for="email">Email address:</label>
                                 <input type="email" class="form-control" id="email" data-toggle="tooltip"
-                                    data-placement="top" title="Input a valid email address" value="efren@boyarizo.es">
+                                    data-placement="top" title="Input a valid email address"
+                                    value="evagarcim@gmail.com">
                             </div>
                         </div>
                     </div>
@@ -225,7 +229,7 @@
                             points="23 34 34 43 47 27" fill="transparent" />
                     </svg>
                     <h1 class="display-4">All done!</h1>
-                    <p class="lead">Check your email inbox for the instructions on how to reset your password.</p>
+                    <p class="lead">Check your email inbox for the instructions on how to complete the registration.</p>
                     <p><small>If you have not received any email kindly <b>check your spam folder</b>.</small></p>
                     <div class="row mt-4">
                         <div class="col-sm text-center">
@@ -233,6 +237,26 @@
                                 Return to rmote.app</a>
                         </div>
                     </div>
+                </div>
+                <div class="container" id="done2" style="display: none;">
+                    <svg id="successAnimation" class="animated" xmlns="http://www.w3.org/2000/svg" width="250"
+                        height="250" viewBox="0 0 70 70">
+                        <path id="successAnimationResult" fill="#D8D8D8"
+                            d="M35,60 C21.1928813,60 10,48.8071187 10,35 C10,21.1928813 21.1928813,10 35,10 C48.8071187,10 60,21.1928813 60,35 C60,48.8071187 48.8071187,60 35,60 Z M23.6332378,33.2260427 L22.3667622,34.7739573 L34.1433655,44.40936 L47.776114,27.6305926 L46.223886,26.3694074 L33.8566345,41.59064 L23.6332378,33.2260427 Z" />
+                        <circle id="successAnimationCircle" cx="35" cy="35" r="24" stroke="#979797" stroke-width="2"
+                            stroke-linecap="round" fill="transparent" />
+                        <polyline id="successAnimationCheck" stroke="#979797" stroke-width="2"
+                            points="23 34 34 43 47 27" fill="transparent" />
+                    </svg>
+                    <h1 class="display-4">All done!</h1>
+                    <div class="row mt-4">
+                        <div class="col-sm text-center">
+                            <a class="lead text-left" href="/"><i data-feather="arrow-left"></i>
+                                Return to rmote.app</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="alert alert-danger" role="alert" id="error2" style="display: none;">
                 </div>
             </div>
         </div>
@@ -314,17 +338,41 @@
             } else if (status == 404) {
                 $('#notfound').show();
                 $('#error').hide();
-                $('#add').show();
+                $('#form').show();
             } else {
                 $('#error')[0].innerHTML = `Something went wrong (` + status + `)!<br><small>If the problem persists contact
                             me at <a href="mailto:efren@boyarizo.es">efren@boyarizo.es</a></small>`;
                 $('#notfound').hide();
                 $('#error').show();
-                $('#add').show();
+                $('#form').show();
             }
-        }, { 'Username': encode(email) });
+        }, { 'Username': encode(email), 'Password': encode(pw1), 'MAC': encode(mac) });
     }
 
+    var url = new URL(location.href);
+    var confirm = url.searchParams.get('confirm');
+    var email = url.searchParams.get('email');
+
+    if (confirm && email) {
+        $('#loading').show();
+        $('#form').hide();
+        req("/register/confirm", function (status, response) {
+            $('#loading').hide();
+            if (status == 200 && response == "done") {
+                $('#done2').show();
+            } else {
+                var msg = `Something went wrong (` + status + `)! Please <a href="/register.html">try again</a>.<br><small>If the problem persists contact
+                            me at <a href="mailto:efren@boyarizo.es">efren@boyarizo.es</a></small>`;
+                if (status == 410) msg = `The link has expired! Please <a href="/register.html">try again</a>.`;
+                if (status == 404) msg = `Could not find the account! Please <a href="/register.html">try again</a>.`;
+                $('#error2')[0].innerHTML = msg
+                $('#error2').show();
+            }
+        }, {
+            'Username': email,
+            'Confirm': confirm
+        });
+    }
 </script>
 
 </html>

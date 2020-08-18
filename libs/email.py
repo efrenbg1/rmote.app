@@ -14,3 +14,15 @@ def passwordRecovery(to, path):
     sender = Mailer(email.host, port=email.port,
                     usr=email.user, pwd=email.pw, use_tls=True)
     sender.send(msg)
+
+
+def registerConfirm(to, path):
+    with open("emails/register.min.htm") as f:
+        html = Template(f.read())
+    msg = Message(From="rmote.app", To=to)
+    msg.Subject = "rmote.app | Verify email"
+    link = email.url + path
+    msg.Html = html.render(link=link)
+    sender = Mailer(email.host, port=email.port,
+                    usr=email.user, pwd=email.pw, use_tls=True)
+    sender.send(msg)

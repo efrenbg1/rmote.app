@@ -1,5 +1,6 @@
 // rmote.app will read the file named as "settings.json". This is an example file 
 {
+    "proxy": "IP where proxy requests will be coming from (to read X-Real-Ip header)",
     "mysql": {
         "host": "MySQL IP address to connect to",
         "user": "MySQL username",
