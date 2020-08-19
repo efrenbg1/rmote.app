@@ -31,8 +31,7 @@ def recoverAdd():
         [random.choice(string.ascii_letters + string.digits) for _ in range(64)])
     ddbb.query(
         "UPDATE user SET confirm=%s, confirmType='password', confirmData=NULL, confirmValid=now() WHERE username=%s", confirm, user)
-    email.passwordRecovery(user, "/recover.html?confirm={}&email={}".format(
-        confirm, base64.b64encode(user.encode('utf-8')).decode('utf-8')))
+    email.passwordRecovery(user, confirm)
     return "done"
 
 

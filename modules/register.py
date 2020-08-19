@@ -66,8 +66,7 @@ def register():
     else:
         ddbb.query(
             "INSERT INTO user (username, pw, confirm, confirmType, confirmData, confirmValid) VALUES (%s, '', %s, 'register', %s, now())", user, confirm, data)
-    email.registerConfirm(user, "/register.html?confirm={}&email={}".format(
-        confirm, base64.b64encode(user.encode('utf-8')).decode('utf-8')))
+    email.registerConfirm(user, confirm)
     return "done"
 
 

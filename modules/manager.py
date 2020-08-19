@@ -1,7 +1,12 @@
 from libs import ddbb, mqtls
+from libs.email import registerShare
 from flask import request
 from libs.flask import socketio
+from datetime import timedelta
 import re
+import random
+import string
+import time
 
 
 @socketio.on('/manager/list')
@@ -47,24 +52,44 @@ def managerChangeShare(h):
     mac = mac.upper()
     if not ddbb.inAcls(user, mac):
         return "403 (Forbidden)", 403
-    email = h.get("email")
-    if not isinstance(email, str):
+    receiver = h.get("email")
+    if not isinstance(receiver, str):
         return "400 (Bad request)", 400
-    email = email.lower()
+    receiver = receiver.lower()
 
     affected = ddbb.query(
         "SELECT username FROM user WHERE id=(SELECT user FROM share WHERE mac=%s)", mac)
     ddbb.query("DELETE FROM share WHERE share.mac=%s", mac)
 
-    if re.match("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$", email):
-        if email == user:
+    if re.match("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$", receiver):
+        if receiver == user:
             return {'done': True}
-        new = ddbb.query("SELECT id, pw FROM user WHERE username=%s", email)
+        new = ddbb.query(
+            "SELECT id, pw, confirmValid FROM user WHERE username=%s", receiver)
         if len(new) == 0:
-            receiver = ddbb.insert(
-                "INSERT INTO user(username, pw) VALUES (%s, '')", email)
+            reuse = ddbb.query(
+                "SELECT id FROM user WHERE date_add(NOW(), INTERVAL -1 HOUR) > confirmValid AND pw=''")
+            confirm = ''.join(
+                [random.choice(string.ascii_letters + string.digits) for _ in range(64)])
+            if len(reuse) > 1:
+                reuse = reuse[0][0]
+                ddbb.query(
+                    "UPDATE user SET username=%s, confirm=%s, confirmType='password', confirmData=NULL, confirmValid=now() WHERE id=%s", receiver, confirm, reuse)
+            else:
+                receiver = ddbb.insert(
+                    "INSERT INTO user(username, pw, confirm, confirmType, confirmData, confirmValid) VALUES (%s, '', %s, 'password', NULL, now())", receiver, confirm)
+            registerShare(user, 'efren@boyarizo.es', confirm)
         else:
             receiver = new[0][0]
+            if new[0][1] == "":
+                valid = new[0][2] + timedelta(hours=1)
+                valid = valid.timestamp()
+                if (valid - time.time()) <= 0:
+                    confirm = ''.join(
+                        [random.choice(string.ascii_letters + string.digits) for _ in range(64)])
+                    ddbb.query(
+                        "UPDATE user SET confirm=%s, confirmType='password', confirmData=NULL, confirmValid=now() WHERE id=%s", confirm, new[0][0])
+                    registerShare(user, 'efren@boyarizo.es', confirm)
         ddbb.query(
             "INSERT INTO share (owner, user, mac) VALUES ((SELECT id FROM user WHERE username=%s), %s, %s)", user, receiver, mac)
     ddbb.query(
@@ -99,7 +124,6 @@ def managerRemove(h):
         return "403 (Forbidden)", 403
     affected = ddbb.query(
         "SELECT username FROM user WHERE id=(SELECT user FROM share WHERE mac=%s) OR id=(SELECT user FROM acls WHERE mac=%s)", mac, mac)
-    print(affected)
     ddbb.query(
         "DELETE FROM share WHERE owner=(SELECT id FROM user WHERE username=%s) AND mac=%s", user, mac)
     ddbb.query(

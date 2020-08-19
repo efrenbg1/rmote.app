@@ -1,10 +1,12 @@
-from libs import ddbb, mqtls
+from libs import ddbb, mqtls, email
 from libs.flask import socketio
 from flask import request
+import time
 
 
 @socketio.on('/control/list')
 def controlList(h):
+    email.q.put(time.time())
     user = request.cookies.get('Username')
     main = ddbb.query(
         "SELECT acls.mac, acls.name FROM acls, user WHERE acls.user=user.id AND user.username=%s ORDER BY name", user)

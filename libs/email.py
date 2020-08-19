@@ -1,40 +1,63 @@
-from mailer import Mailer
-from mailer import Message
+from mailer import Message, Mailer
 from libs.ddbb import email
 from jinja2 import Template
+import queue
+import threading
+import base64
+
+q = queue.Queue()
 
 
-def passwordRecovery(to, path):
-    with open("emails/password.min.htm") as f:
-        html = Template(f.read())
-    msg = Message(From="rmote.app", To=to)
-    msg.Subject = "rmote.app | Reset password"
-    link = email.url + path
-    msg.Html = html.render(link=link)
+def sender():
     sender = Mailer(email.host, port=email.port,
                     usr=email.user, pwd=email.pw, use_tls=True)
-    sender.send(msg)
+    while True:
+        d = q.get()
+        print(d)
+        with open("emails/" + d['template']) as f:
+            html = Template(f.read())
+        msg = Message(From="rmote.app", To=d['to'])
+        msg.Subject = d['subject']
+        msg.Html = html.render(d['render'])
+        sender.send(msg)
+        q.task_done()
 
 
-def registerConfirm(to, path):
-    with open("emails/register.min.htm") as f:
-        html = Template(f.read())
-    msg = Message(From="rmote.app", To=to)
-    msg.Subject = "rmote.app | Verify email"
-    link = email.url + path
-    msg.Html = html.render(link=link)
-    sender = Mailer(email.host, port=email.port,
-                    usr=email.user, pwd=email.pw, use_tls=True)
-    sender.send(msg)
+threading.Thread(target=sender, daemon=True).start()
 
 
-def registerShare(user, to, path):
-    with open("emails/share.min.htm") as f:
-        html = Template(f.read())
-    msg = Message(From="rmote.app", To=to)
-    msg.Subject = "rmote.app | Complete registration"
-    link = email.url + path
-    msg.Html = html.render(user=user, link=link)
-    sender = Mailer(email.host, port=email.port,
-                    usr=email.user, pwd=email.pw, use_tls=True)
-    sender.send(msg)
+def passwordRecovery(to, confirm):
+    to_url = base64.b64encode(to.encode('utf-8')).decode('utf-8')
+    q.put({
+        'template': 'password.min.htm',
+        'to': to,
+        'subject': "rmote.app | Reset password",
+        'render': {
+            'link': email.url + "/recover.html?confirm={}&email={}".format(confirm, to_url)
+        }
+    })
+
+
+def registerConfirm(to, confirm):
+    to_url = base64.b64encode(to.encode('utf-8')).decode('utf-8')
+    q.put({
+        'template': 'register.min.htm',
+        'to': to,
+        'subject': "rmote.app | Verify email",
+        'render': {
+            'link': email.url + "/register.html?confirm={}&email={}".format(confirm, to_url)
+        }
+    })
+
+
+def registerShare(user, to, confirm):
+    to_url = base64.b64encode(to.encode('utf-8')).decode('utf-8')
+    q.put({
+        'template': 'share.min.htm',
+        'to': to,
+        'subject': "rmote.app | Complete registration",
+        'render': {
+            'user': user,
+            'link': email.url + "/recover.html?confirm={}&email={}".format(confirm, to_url)
+        }
+    })
