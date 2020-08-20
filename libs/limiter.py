@@ -7,6 +7,7 @@ import json
 
 limiter = {}
 llimiter = threading.Lock()
+count_limit = 5
 
 
 def get_ip():
@@ -41,7 +42,7 @@ def check():
     ip = get_ip()
     with llimiter:
         limit = limiter.get(ip)
-        if limit != None and len(limit[0]) > 4 and (time.time() - limit[1]) < 0:
+        if limit != None and len(limit[0]) >= count_limit and (time.time() - limit[1]) < 0:
             limit[1] = time.time() + 30
             limiter[ip] = limit
             return False

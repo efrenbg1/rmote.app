@@ -33,142 +33,75 @@ class Settings {
         ui.draw(this.grid, this.templates.menu.format(cards));
     }
 
-    mail() {
-        if (!session.refresh()) return;
-        showDialog({
-            title: 'Change email:',
-            text: `<center><form action="javascript:" autocomplete="off">
-            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-            <div class="popup">
-            <span class="popuptext" id="valid">Please insert a valid email address</span></div>
-            <input class="mdl-textfield__input" type="email" id="input-1" onkeyup="active.checkEmail()" autocomplete="false">
-            <label class="mdl-textfield__label" for="sample1">New email</label>
-            </div>
-            <div class="mdl-textfield mdl-js-textfield">
-            <div class="popup">
-            <span class="popuptext" id="match">Emails don´t match</span></div>
-            <input class="mdl-textfield__input" type="email" id="input-2" onkeyup="active.checkEmail()">
-            <label class="mdl-textfield__label" for="sample1">Repeat</label>
-            </div>
-            <div class="mdl-textfield mdl-js-textfield">
-            <div class="popup">
-            <span class="popuptext" id="pw">⮚ 8-20 characters<br>⮚ Contain only and at least one: uppercase, lowercase and number</span>
-            </div>
-            <input class="mdl-textfield__input" type="password" id="input-3" onkeyup="active.checkEmail()" autocomplete="new-password">
-            <label class="mdl-textfield__label" for="input-3">Confirm password</label>
-            </div>
-            </form></center>`,
-            positive: {
-                title: '<h style="color:green;">Save</h>',
-                id: 'save',
-                onClick: function () { active.updateEmail(); }
-            },
-            negative: {
-                title: '<h style="color:red;" disabled>Cancel</h>'
-            },
-            onLoaded: function () {
-                tools.hide("save");
-            }
-        });
+    see(id) {
+        if (!session.refresh()) return;;
+        $('.modal').modal('hide');
+        if (id == 1) tools.showModal('email');
+        if (id == 2) tools.showModal('password');
+        if (id == 3) tools.showModal('destroy');
     }
+
+
+    email() {
+        $('#email1').tooltip('hide');
+        $('#email2').tooltip('hide');
+        $('#emailPassword').tooltip('hide');
+        var email1 = String($('#email1')[0].value).toLowerCase();;
+        var email2 = String($('#email2')[0].value).toLowerCase();;
+        var pw = $('#emailPassword')[0].value;
+
+        const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+        if (!re.test(email1)) {
+            $('#email1').tooltip('show');
+            return;
+        }
+        if (email1 != email2) {
+            $('#email2').tooltip('show');
+            return;
+        }
+        tools.sreq('/settings/email', function (status, response) {
+            if (status == 401) {
+                $('#emailPassword').tooltip('show');
+            } else if (status == 418) {
+                $('#email1').tooltip('show');
+            } else if (status == 200 && response == "done") {
+                tools.hideModal('email');
+                tools.alert('A confirmation email has been sent!', 'alert-triangle', 'info');
+                tools.showSuccess('Changes saved');
+            } else {
+                tools.hideModal('email');
+                tools.alert(`Something went wrong ({})! If the problem persists please contact
+                me at <a href="mailto:efren@boyarizo.es">efren@boyarizo.es</a>`.format(status), 'alert-triangle', 'danger');
+                tools.showFailure(status);
+            }
+            console.log(status, response)
+        }.bind(this), { 'email': email1, 'pw': pw });
+    }
+
 
     password() {
-        if (!session.refresh()) return;
-        showDialog({
-            title: 'Change password:',
-            text: `<center>
-  <form action="javascript:" autocomplete="off">
-    <div class="popup mdl-textfield mdl-js-textfield">
-      <div class="popup">
-        <span class="popuptext" id="popup1">⮚ 8-20 characters<br>⮚ Contain only and at least one: uppercase, lowercase and number</span>
-      </div>
-      <input class="mdl-textfield__input" type="password" id="input-1" onkeyup="active.checkPass()" autocomplete="new-password">
-      <label id="input-1-text" class="mdl-textfield__label" for="sample1">Current password</label>
-    </div>
-    <div class="mdl-textfield mdl-js-textfield">
-      <div class="popup">
-        <span class="popuptext" id="popup2">⮚ 8-20 characters<br>⮚ Contain only and at least one: uppercase, lowercase and number</span>
-      </div>
-      <div class="popup">
-        <span class="popuptext" id="popup2_old">Can´t be the same as your older password</span></div>
-      <input class="mdl-textfield__input" type="password" id="input-2" onkeyup="active.checkPass()" autocomplete="new-password">
-      <label id="input-2-text" class="mdl-textfield__label" for="sample1">New password</label>
-    </div>
-    <div class="mdl-textfield mdl-js-textfield">
-      <div class="popup">
-        <span class="popuptext" id="popup3">Passwords don´t match</span></div>
-      <input class="mdl-textfield__input" type="password" id="input-3" onkeyup="active.checkPass()" autocomplete="new-password">
-      <label id="input-3-text" class="mdl-textfield__label" for="sample1">Repeat</label>
-    </div>
-  </form>
-</center>`,
-            positive: {
-                title: '<h style="color:green;">Save</h>',
-                id: 'save',
-                onClick: function () { active.updatePassword(); }
-            },
-            negative: {
-                title: '<h style="color:red;" disabled>Cancel</h>'
-            },
-            onLoaded: function () {
-                tools.hide("save");
-                tools.hide("popup1");
-            }
-        });
-    }
+        $('#passwordOld').tooltip('hide');
+        $('#passwordNew1').tooltip('hide');
+        $('#passwordNew2').tooltip('hide');
+        var old = $('#passwordOld')[0].value;
+        var new1 = $('#passwordNew1')[0].value;
+        var new2 = $('#passwordNew2')[0].value;
 
-    destroy() {
-        if (!session.refresh()) return;
-        showDialog({
-            title: 'Please confirm data to delete the account:',
-            text: `<center>
-  <form action="javascript:" autocomplete="off">
-    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-      <div class="popup">
-        <span class="popuptext" id="popup2">Wrong email address</span></div>
-      <input class="mdl-textfield__input" type="text" id="input-1" onkeyup="active.checkDestroy()" autocomplete="false">
-      <label class="mdl-textfield__label" for="sample1">Email</label>
-    </div>
-    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-      <div class="popup">
-        <span class="popuptext" id="popup3">⮚ 8-20 characters<br>⮚ Contain only and at least one: uppercase, lowercase and number</span>
-      </div>
-      <input class="mdl-textfield__input" type="password" id="input-2" onkeyup="active.checkDestroy()" autocomplete="new-password">
-      <label class="mdl-textfield__label" for="sample1">Password</label>
-    </div>
-  </form>
-</center>`,
-            positive: {
-                title: '<h style="color:red;">Delete</h>',
-                id: 'delete',
-                onClick: function () { active.destroyAccount(); }
-            },
-            negative: {
-                title: '<h style="color:green;" disabled>Cancel</h>'
-            },
-            onLoaded: function () {
-                tools.hide("delete");
-            }
-        });
-    }
-
-
-    updateEmail() {
-        if (this.checkEmail()) {
-            var input_1 = document.getElementById("input-1").value;
-            var input_3 = document.getElementById("input-3").value;
-            tools.req('/settings/email', function (status, response) {
-                if (status === 200) {
-                    alert("E-mail has been changed! Reloading session...");
-                    session.logOut();
-                } else {
-                    tools.snack("Something went wrong")
-                }
-            }.bind(this), { 'new': tools.encodeSTR(input_1), 'pw': tools.encodeSTR(input_3) });
+        if (!old.length) {
+            $('#passwordOld').tooltip('show');
+            return;
         }
-    }
-
-    updatePassword() {
+        if (new1.length < 8 || new2.length > 20) {
+            $('#passwordNew1').tooltip('show');
+            return;
+        }
+        if (new1 != new2) {
+            $('#passwordNew2').tooltip('show');
+            return;
+        }
+        alert("Done...");
+        return;
         if (this.checkPass()) {
             var input_1 = document.getElementById("input-1").value;
             var input_2 = document.getElementById("input-2").value;
@@ -182,7 +115,30 @@ class Settings {
         }
     }
 
-    destroyAccount() {
+    destroy() {
+        $('#destroyEmail').tooltip('hide');
+        $('#destroyPassword1').tooltip('hide');
+        $('#destroyPassword2').tooltip('hide');
+        var email = String($('#destroyEmail')[0].value).toLowerCase();
+        var pw1 = $('#destroyPassword1')[0].value;
+        var pw2 = $('#destroyPassword2')[0].value;
+
+        const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+        if (!re.test(email)) {
+            $('#destroyEmail').tooltip('show');
+            return;
+        }
+        if (!pw1.length) {
+            $('#destroyPassword1').tooltip('show');
+            return;
+        }
+        if (pw1 != pw2) {
+            $('#destroyPassword2').tooltip('show');
+            return;
+        }
+        alert("E-mail has been changed! Reloading session...");
+        return;
         if (this.checkDestroy()) {
             var input_2 = document.getElementById("input-2").value;
             tools.req('/settings/destroy', function (status, response) {
@@ -194,128 +150,6 @@ class Settings {
                 }
             }.bind(this), { 'pw': tools.encodeSTR(input_2) });
         }
-    }
-
-
-    checkEmail() {
-        var email = document.getElementById("input-1").value;
-        var email2 = document.getElementById("input-2").value;
-        var pw = document.getElementById("input-3").value;
-        var filter = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
-        var filter2 = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])([a-zA-Z0-9]{8,20})$/;
-        if (email) {
-            if (!filter.test(email)) {
-                tools.show("valid");
-                tools.hide("match");
-                tools.hide("pw");
-            } else {
-                tools.hide("valid");
-                if (email == email2) {
-                    if (!filter2.test(pw)) {
-                        tools.show("pw");
-                        tools.hide("match");
-                    } else {
-                        tools.show("save");
-                        tools.hide("match");
-                        tools.hide("pw");
-                        return true;
-                    }
-                } else {
-                    tools.show("match");
-                    tools.hide("pw");
-                }
-            }
-        } else {
-            tools.hide("match");
-            tools.hide("valid");
-            tools.hide("pw");
-        }
-        return false;
-    }
-
-    checkPass() {
-        var input_1 = document.getElementById("input-1");
-        var input_2 = document.getElementById("input-2");
-        var input_3 = document.getElementById("input-3");
-        var input_1_text = document.getElementById("input-1-text");
-        var input_2_text = document.getElementById("input-2-text");
-        var input_3_text = document.getElementById("input-3-text");
-        var filter = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])([a-zA-Z0-9]{8,20})$/;
-        if (input_1.value) {
-            if (!filter.test(input_1.value)) {
-                tools.show("popup1");
-                tools.hide("save");
-                tools.hide("popup3");
-                tools.hide("popup2");
-                tools.hide("popup2_old");
-            } else {
-                tools.hide("popup1");
-                tools.hide("popup2_old");
-                if (input_2.value) {
-                    if (!filter.test(input_2.value)) {
-                        tools.show("popup2");
-                        tools.hide("save");
-                        tools.hide("popup3");
-                    } else if (input_2.value == input_1.value) {
-                        tools.hide("save");
-                        tools.hide("popup3");
-                        tools.hide("popup2");
-                        tools.show("popup2_old");
-                    } else {
-                        tools.hide("popup2");
-                        if (input_2.value == input_3.value) {
-                            tools.show("save");
-                            tools.hide("popup3");
-                            return true;
-                        } else {
-                            tools.show("popup3");
-                            tools.hide("save");
-                        }
-                    }
-                } else {
-                    tools.hide("save");
-                    tools.hide("popup2");
-                }
-            }
-        } else {
-            tools.hide("save");
-            tools.hide("popup1");
-        }
-        return false;
-    }
-
-    checkDestroy() {
-        var email = document.getElementById("input-1");
-        var pw = document.getElementById("input-2");
-        var filter_email = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
-        var filter_pw = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])([a-zA-Z0-9]{8,20})$/;
-        if (tools.getCookie('Username') == "") {
-            session.logIn("Session expired");
-        }
-        if (email.value) {
-            if (tools.getCookie('Username') != email.value) {
-                tools.show("popup2");
-                tools.hide("popup3");
-                tools.hide("delete");
-            } else if (tools.getCookie('Username') == email.value) {
-                tools.hide("popup2");
-                tools.hide("delete");
-                if (pw.value) {
-                    if (!filter_pw.test(pw.value)) {
-                        tools.show("popup3");
-                    } else {
-                        tools.show("delete");
-                        tools.hide("popup3");
-                        return true;
-                    }
-                }
-            }
-        } else {
-            tools.hide("popup2");
-            tools.hide("popup3");
-            tools.hide("delete");
-        }
-        return false;
     }
 }
 
@@ -354,22 +188,25 @@ class settingsTemplates {
                     <input style="display:none" type="email">
                     <input style="display:none" type="password">
                     <div class="form-group">
-                        <label for="exampleInputEmail1">New email</label>
-                        <input type="email" class="form-control">
+                        <label>New email</label>
+                        <input type="email" class="form-control" data-toggle="tooltip"
+                        data-placement="top" title="Input a valid email address" id="email1" value="efrens@boyarizo.es">
                         <small class="form-text text-muted">The email is only used to login</small>
                     </div>
                     <div class="form-group">
                         <label>Repeat new email</label>
-                        <input type="email" class="form-control" autocomplete="nope">
+                        <input type="email" class="form-control" autocomplete="nope" data-toggle="tooltip"
+                        data-placement="top" title="Emails do not match" id="email2" value="efrens@boyarizo.es">
                     </div>
                     <div class="form-group">
                         <label>Confirm password</label>
-                        <input type="password" class="form-control" autocomplete="new-password">
+                        <input type="password" class="form-control" autocomplete="new-password" data-toggle="tooltip"
+                        data-placement="top" title="Wrong password" id="emailPassword" value="1234">
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-outline-success"><i data-feather="save"></i>&nbsp;Save</button>
+                <button type="button" class="btn btn-outline-success" onclick="settings.email()"><i data-feather="save"></i>&nbsp;Save</button>
             </div>
         </div>
     </div>
@@ -390,20 +227,23 @@ class settingsTemplates {
                     <input style="display:none" type="password">
                     <div class="form-group">
                         <label for="exampleInputEmail1">Current password</label>
-                        <input type="password" class="form-control" autocomplete="new-password">
+                        <input type="password" class="form-control" autocomplete="new-password" data-toggle="tooltip"
+                        data-placement="top" title="Wrong password" id="passwordOld">
                     </div>
                     <div class="form-group">
                         <label>New password</label>
-                        <input type="password" class="form-control" autocomplete="new-password">
+                        <input type="password" class="form-control" autocomplete="new-password" data-toggle="tooltip"
+                        data-placement="top" title="8-20 characters" id="passwordNew1">
                     </div>
                     <div class="form-group">
                         <label>Repeat new password</label>
-                        <input type="password" class="form-control" autocomplete="new-password">
+                        <input type="password" class="form-control" autocomplete="new-password" data-toggle="tooltip"
+                        data-placement="top" title="Passwords do not match" id="passwordNew2">
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-outline-success"><i data-feather="save"></i>&nbsp;Save</button>
+                <button type="button" class="btn btn-outline-success" onclick="settings.password()"><i data-feather="save"></i>&nbsp;Save</button>
             </div>
         </div>
     </div>
@@ -413,7 +253,7 @@ class settingsTemplates {
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Change email</h5>
+                <h5 class="modal-title">Delete account</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -423,21 +263,24 @@ class settingsTemplates {
                     <input style="display:none" type="email">
                     <input style="display:none" type="password">
                     <div class="form-group">
-                        <label for="exampleInputEmail1">Current password</label>
-                        <input type="password" class="form-control" autocomplete="new-password">
+                        <label>Current email</label>
+                        <input type="email" class="form-control" autocomplete="nope" data-toggle="tooltip"
+                        data-placement="top" title="Input a valid email address" id="destroyEmail">
                     </div>
                     <div class="form-group">
-                        <label>New password</label>
-                        <input type="password" class="form-control" autocomplete="new-password">
+                        <label>Current password</label>
+                        <input type="password" class="form-control" autocomplete="new-password" data-toggle="tooltip"
+                        data-placement="top" title="Wrong password" id="destroyPassword1">
                     </div>
                     <div class="form-group">
-                        <label>Repeat new password</label>
-                        <input type="password" class="form-control" autocomplete="new-password">
+                        <label>Repeat password</label>
+                        <input type="password" class="form-control" autocomplete="new-password" data-toggle="tooltip"
+                        data-placement="top" title="Passwords do not match" id="destroyPassword2">
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-outline-success"><i data-feather="save"></i>&nbsp;Save</button>
+                <button type="button" class="btn btn-outline-danger" onclick="settings.destroy()"><i data-feather="crosshair"></i>&nbsp;Delete</button>
             </div>
         </div>
     </div>
