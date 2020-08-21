@@ -67,15 +67,16 @@ class Settings {
                 $('#email1').tooltip('show');
             } else if (status == 200 && response == "done") {
                 tools.hideModal('email');
-                tools.alert('A confirmation email has been sent!', 'alert-triangle', 'info');
+                tools.alert('This session has been closed. <b>Please verify the new email by clicking on the link sent.</b>', 'alert-triangle', 'info');
                 tools.showSuccess('Changes saved');
+                document.cookie = "Username=;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+                document.cookie = "Session=;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
             } else {
                 tools.hideModal('email');
                 tools.alert(`Something went wrong ({})! If the problem persists please contact
                 me at <a href="mailto:efren@boyarizo.es">efren@boyarizo.es</a>`.format(status), 'alert-triangle', 'danger');
                 tools.showFailure(status);
             }
-            console.log(status, response)
         }.bind(this), { 'email': email1, 'pw': pw });
     }
 

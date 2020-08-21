@@ -85,17 +85,22 @@ def registerConfirm():
 
     q = ddbb.query(
         "SELECT confirmType, confirmData, confirmValid FROM user WHERE confirm=%s AND username=%s", confirm, user)
-    if len(q) == 0 or q[0][0] != 'register':
+    if len(q) == 0 or (q[0][0] != 'register' and q[0][0] != 'email'):
         return "404 (Not Found)", 404
     valid = q[0][2] + timedelta(hours=1)
     valid = valid.timestamp()
     if (valid - time.time()) < 0:
         return "410 (Gone)", 410
 
-    data = q[0][1].split(';')
-
-    ddbb.query(
-        "INSERT INTO acls (mac, user, name) SELECT %s, id, 'Unnamed' FROM user WHERE username=%s", data[1], user)
-    ddbb.query(
-        "UPDATE user SET pw=%s, confirm=NULL, confirmType=NULL, confirmData=NULL, confirmValid=NULL WHERE username=%s", data[0], user)
+    if q[0][0] == 'register':
+        data = q[0][1].split(';')
+        ddbb.query(
+            "INSERT INTO acls (mac, user, name) SELECT %s, id, 'Unnamed' FROM user WHERE username=%s", data[1], user)
+        ddbb.query(
+            "UPDATE user SET pw=%s, confirm=NULL, confirmType=NULL, confirmData=NULL, confirmValid=NULL WHERE username=%s", data[0], user)
+    if q[0][0] == 'email':
+        ddbb.query(
+            "UPDATE user SET username=confirmData, confirm=NULL, confirmType=NULL, confirmData=NULL, confirmValid=NULL WHERE username=%s", user)
+        mqtls.user(user)
+        mqtls.acls(user)
     return "done"

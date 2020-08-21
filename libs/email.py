@@ -50,6 +50,18 @@ def registerConfirm(to, confirm):
     })
 
 
+def emailConfirm(to, old, confirm):
+    old = base64.b64encode(old.encode('utf-8')).decode('utf-8')
+    q.put({
+        'template': 'email.min.htm',
+        'to': to,
+        'subject': "rmote.app | Confirm email",
+        'render': {
+            'link': email.url + "/register.html?confirm={}&email={}".format(confirm, old)
+        }
+    })
+
+
 def registerShare(user, to, confirm):
     to_url = base64.b64encode(to.encode('utf-8')).decode('utf-8')
     q.put({

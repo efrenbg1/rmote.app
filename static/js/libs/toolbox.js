@@ -12,21 +12,23 @@ class Toolbox {
 
     sOpen() {
         if (this.opened) return;
-        this.opened = true;
-        this.socket = io();
-        this.socket.on('connect', function () {
-            this.callback.forEach((n) => {
-                n();
-            });
-            this.callback = []; // Remove last callback
-        }.bind(this));
-        this.socket.on('connect_error', function (err) {
-            tools.req('/check');
-            this.sClose();
-        }.bind(this));
-        this.socket.on('disconnect', function (err) {
-            console.log(err)
-            this.sClose();
+        tools.req('/check', function (status, response) {
+            if (status != 200 || response != null) return;
+            this.opened = true;
+            this.socket = io();
+            this.socket.on('connect', function () {
+                this.callback.forEach((n) => {
+                    n();
+                });
+                this.callback = []; // Remove last callback
+            }.bind(this));
+            this.socket.on('connect_error', function (err) {
+                this.sClose();
+            }.bind(this));
+            this.socket.on('disconnect', function (err) {
+                console.log(err)
+                this.sClose();
+            }.bind(this));
         }.bind(this));
     }
 

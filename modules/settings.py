@@ -1,8 +1,6 @@
-from libs import ddbb, sessions, password, mqtls
+from libs import ddbb, sessions, password, mqtls, email
 from libs.flask import socketio
 from flask import request
-import base64
-import json
 import re
 import random
 import string
@@ -25,6 +23,7 @@ def settingsEmail(h):
     confirm = ''.join(
         [random.choice(string.ascii_letters + string.digits) for _ in range(64)])
     ddbb.query("UPDATE user SET confirm=%s, confirmType='email', confirmData=%s, confirmValid=now() WHERE username=%s", confirm, new, user)
+    email.emailConfirm(new, user, confirm)
     return "done"
 
 
