@@ -52,9 +52,14 @@ def settingsDestroy(h):
     pw = h.get('pw')
     if email is None or pw is None:
         return "400 (Bad request)", 400
+    if email != user:
+        return "401 (Unauthorized)", 401
     if not ddbb.checkPW(user, pw):
         return "401 (Unauthorized)", 401
-
+    
+    ddbb.query("DELETE FROM share WHERE owner=(SELECT id FROM user WHERE username=%s)", user)
+    ddbb.query("DELETE FROM acls WHERE user=(SELECT id FROM user WHERE username=%s)", user)
+    ddbb.query("DELETE FROM user WHERE username=%s)", user)
     mqtls.user(user)
     mqtls.acls(user)
     return "done"

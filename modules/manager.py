@@ -71,14 +71,16 @@ def managerChangeShare(h):
                 "SELECT id FROM user WHERE date_add(NOW(), INTERVAL -1 HOUR) > confirmValid AND pw=''")
             confirm = ''.join(
                 [random.choice(string.ascii_letters + string.digits) for _ in range(64)])
-            if len(reuse) > 1:
+            if len(reuse) > 0:
                 reuse = reuse[0][0]
                 ddbb.query(
                     "UPDATE user SET username=%s, confirm=%s, confirmType='password', confirmData=NULL, confirmValid=now() WHERE id=%s", receiver, confirm, reuse)
+                new = reuse
             else:
-                receiver = ddbb.insert(
-                    "INSERT INTO user(username, pw, confirm, confirmType, confirmData, confirmValid) VALUES (%s, '', %s, 'password', NULL, now())", receiver, confirm)
-            registerShare(user, 'efren@boyarizo.es', confirm)
+                new = ddbb.insert(
+                    "INSERT INTO user (username, pw, confirm, confirmType, confirmData, confirmValid) VALUES (%s, '', %s, 'password', NULL, now())", receiver, confirm)
+            registerShare(user, receiver, confirm)
+            receiver = new
         else:
             receiver = new[0][0]
             if new[0][1] == "":
@@ -92,8 +94,6 @@ def managerChangeShare(h):
                     registerShare(user, 'efren@boyarizo.es', confirm)
         ddbb.query(
             "INSERT INTO share (owner, user, mac) VALUES ((SELECT id FROM user WHERE username=%s), %s, %s)", user, receiver, mac)
-    ddbb.query(
-        "DELETE FROM user WHERE id NOT IN (SELECT user FROM share) AND id NOT IN (SELECT user FROM acls)")
     for u in affected:
         mqtls.acls(u[0])
     return {'done': True}
@@ -124,6 +124,8 @@ def managerRemove(h):
         return "403 (Forbidden)", 403
     affected = ddbb.query(
         "SELECT username FROM user WHERE id=(SELECT user FROM share WHERE mac=%s) OR id=(SELECT user FROM acls WHERE mac=%s)", mac, mac)
+    ddbb.query(
+        "DELETE FROM share WHERE user=(SELECT id FROM user WHERE username=%s) AND mac=%s", user, mac)
     ddbb.query(
         "DELETE FROM share WHERE owner=(SELECT id FROM user WHERE username=%s) AND mac=%s", user, mac)
     ddbb.query(

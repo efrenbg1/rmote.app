@@ -101,19 +101,20 @@ class Settings {
             $('#passwordNew2').tooltip('show');
             return;
         }
-        alert("Done...");
-        return;
-        if (this.checkPass()) {
-            var input_1 = document.getElementById("input-1").value;
-            var input_2 = document.getElementById("input-2").value;
-            tools.req('/settings/password', function (status, response) {
-                if (status === 200) {
-                    alert("Password succesfully changed");
-                } else {
-                    tools.snack("Something went wrong")
-                }
-            }.bind(this), { 'pw': tools.encodeSTR(input_1), 'new': tools.encodeSTR(input_2) });
-        }
+        tools.sreq('/settings/password', function (status, response) {
+            if (status == 401) {
+                $('#passwordOld').tooltip('show');
+            } else if (status == 200 && response == "done") {
+                tools.hideModal('password');
+                tools.showSuccess('Changes saved');
+                ui.load('settings');
+            } else {
+                tools.hideModal('password');
+                tools.alert(`Something went wrong ({})! If the problem persists please contact
+                me at <a href="mailto:efren@boyarizo.es">efren@boyarizo.es</a>`.format(status), 'alert-triangle', 'danger');
+                tools.showFailure(status);
+            }
+        }.bind(this), { 'old': old, 'new': new1 });
     }
 
     destroy() {
@@ -126,7 +127,7 @@ class Settings {
 
         const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
-        if (!re.test(email)) {
+        if (!re.test(email) || tools.getCookie('Username') != email) {
             $('#destroyEmail').tooltip('show');
             return;
         }
@@ -138,19 +139,23 @@ class Settings {
             $('#destroyPassword2').tooltip('show');
             return;
         }
-        alert("E-mail has been changed! Reloading session...");
-        return;
-        if (this.checkDestroy()) {
-            var input_2 = document.getElementById("input-2").value;
-            tools.req('/settings/destroy', function (status, response) {
-                if (status === 200) {
-                    alert("Account succesfully deleted");
-                    session.logOut();
-                } else {
-                    tools.snack("Something went wrong")
-                }
-            }.bind(this), { 'pw': tools.encodeSTR(input_2) });
-        }
+        tools.sreq('/settings/destroy', function (status, response) {
+            if (status == 401) {
+                $('#destroyPassword1').tooltip('show');
+            } else if (status == 200 && response == "done") {
+                tools.hideModal('destroy');
+                tools.showSuccess('Changes saved');
+                tools.alert('This account has been deleted. <b>This session will be closed in 5 seconds.</b>', 'alert-triangle', 'info');
+                setTimeout(function(){
+                    session.LogOut();
+                }, 5000);
+            } else {
+                tools.hideModal('password');
+                tools.alert(`Something went wrong ({})! If the problem persists please contact
+                me at <a href="mailto:efren@boyarizo.es">efren@boyarizo.es</a>`.format(status), 'alert-triangle', 'danger');
+                tools.showFailure(status);
+            }
+        }.bind(this), { 'email': email, 'pw': pw1 });
     }
 }
 
@@ -266,17 +271,17 @@ class settingsTemplates {
                     <div class="form-group">
                         <label>Current email</label>
                         <input type="email" class="form-control" autocomplete="nope" data-toggle="tooltip"
-                        data-placement="top" title="Input a valid email address" id="destroyEmail">
+                        data-placement="top" title="Input a valid email address" id="destroyEmail" value="efren@boyarizo.es">
                     </div>
                     <div class="form-group">
                         <label>Current password</label>
                         <input type="password" class="form-control" autocomplete="new-password" data-toggle="tooltip"
-                        data-placement="top" title="Wrong password" id="destroyPassword1">
+                        data-placement="top" title="Wrong password / email" id="destroyPassword1" value="1Q2w3e4r">
                     </div>
                     <div class="form-group">
                         <label>Repeat password</label>
                         <input type="password" class="form-control" autocomplete="new-password" data-toggle="tooltip"
-                        data-placement="top" title="Passwords do not match" id="destroyPassword2">
+                        data-placement="top" title="Passwords do not match" id="destroyPassword2" value="1Q2w3e4r">
                     </div>
                 </form>
             </div>

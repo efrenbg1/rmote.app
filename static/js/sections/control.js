@@ -16,25 +16,15 @@ class Control {
             var cards = "";
             response['own'].forEach((n) => {
                 n.update = "";
-                if (parseInt(n.version) != this.version) n.update = this.templates.update;
+                if (n.version != null && parseInt(n.version) != this.version) n.update = this.templates.update;
                 cards += this.templates.card.render(n);
             });
-            if (response['share'].length > 0) {
-                var cards = cards + this.templates.divider.format('Shared');
-                for (var i = 0; i < response['share'].length; i++) {
-                    var MAC = response['share'][i]['mac'];
-                    var name = response['share'][i]['name'];
-                    var update = this.templates.update;
-                    if (parseInt(response['share'][i]['version']) == this.version) {
-                        update = "";
-                    }
-                    cards += this.templates.card.render({
-                        update: update,
-                        name: name,
-                        MAC: MAC
-                    });
-                }
-            }
+            if (response['share'].length > 0) cards += this.templates.divider.format('Shared');
+            response['share'].forEach((n) => {
+                n.update = "";
+                if (n.version != null && parseInt(n.version) != this.version) n.update = this.templates.update;
+                cards += this.templates.card.render(n);
+            });
             clearInterval(this.interval);
             ui.draw('grid', this.templates.grid.format(cards), function () {
                 this.updateCards(response['own']);
@@ -119,16 +109,11 @@ class Control {
 
 class controlTemplates {
     constructor() {
-        this.divider = `
-<div class="mdl-cell mdl-cell--12-col">
-<div class="hr-sect"><span class="mdl-layout-title">{}</span></div>
-</div>
-  `;
-
-        this.update = `<button class="mdl-button mdl-js-button mdl-button--raised mdl-button mdl-js-ripple-effect"
-                data-upgraded=",MaterialButton,MaterialRipple" style="display: inline; visibility: visible;">
-            <i class="material-icons">system_update_alt</i> Update available
-            <span class="mdl-button__ripple-container"><span class="mdl-ripple"></span></span></button>`;
+        this.divider = `<div class="hr-sect text-muted mt-3 mb-2">
+    <span>
+        <h5>{}</h5>
+    </span>
+</div>`;
 
         this.waiting = `<div class="alert alert-secondary text-center mb-0" role="alert">
             <i data-feather="check"></i>&nbsp;Waiting for command
@@ -150,6 +135,10 @@ class controlTemplates {
             <i data-feather="check"></i>&nbsp;Waiting for command
         </div>`;
 
+        this.update = `<div class="alert alert-info text-center mb-0" role="alert">
+    <i data-feather="download-cloud"></i>&nbsp;Update available
+</div>`;
+
         this.grid = `<div class="row d-flex justify-content-around">
         {}
         </div>
@@ -158,6 +147,7 @@ class controlTemplates {
         this.card = `<div class="col-sm-4 pb-3">
 	<div class="card">
 		<img class="card-img-top mb-0" src="/img/off.jpg" id="{{mac}}_status">
+		{{update}}
 		<div id="{{mac}}_action" class="mb-2"></div>
 		<div class="card-body p-2">
 			<h5 class="card-title text-center">{{name}}&nbsp;<small>({{mac}})</small></h5>

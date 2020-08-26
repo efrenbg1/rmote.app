@@ -15,7 +15,7 @@ class Manager {
             var own = "";
             var share = "";
             var html = "";
-            this.boards = response['own'];
+            this.boards = response['own'].concat(response['share']);
             this.total = response['own'].length + response['share'].length;
             response['own'].forEach((n) => {
                 own += this.templates.card.render(n);
@@ -116,15 +116,17 @@ class Manager {
     remove(mac) {
         if (!session.refresh()) return;
         if (mac == undefined) {
+            var invalid = false;
             this.boards.forEach((n) => {
                 if (n.mac == this.edit) {
                     var name = $('#removeName');
                     if (name[0].value != n.name) {
                         name.tooltip('show');
+                        invalid = true;
                     }
-                    return;
                 }
             });
+            if (invalid) return;
             tools.hideModal('remove');
             tools.sreq('/manager/remove', function (status, response) {
                 if (status == 200 && response['done']) {
@@ -267,7 +269,7 @@ class managerTemplates {
                 <div class="col-4 px-0">
                 </div>
                 <div class="col-4 text-center px-0">
-                    <button type="button" class="btn btn-outline-danger" title="Remove board">
+                    <button type="button" class="btn btn-outline-danger" onclick="manager.remove('{{mac}}')" title="Remove board">
                         <i data-feather="trash-2"></i>
                     </button>
                 </div>
