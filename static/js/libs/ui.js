@@ -233,7 +233,7 @@ class UI {
             try {
                 if (this.modules[this.state[i]].class().changed()) return true;
             } catch (e) {
-                console.error(e);
+                console.log(e);
             }
         }
         return false;
