@@ -171,8 +171,7 @@
                             <div class="form-group">
                                 <label for="email">Email address:</label>
                                 <input type="email" class="form-control" id="email" data-toggle="tooltip"
-                                    data-placement="top" title="Input a valid email address"
-                                    value="evagarcim@gmail.com">
+                                    data-placement="top" title="Input a valid email address">
                             </div>
                         </div>
                     </div>
@@ -181,7 +180,7 @@
                             <div class="form-group">
                                 <label for="password1">Password:</label>
                                 <input type="text" class="form-control" id="password1" data-toggle="tooltip"
-                                    data-placement="top" title="8-20 characters" value="1Q2w3e4r">
+                                    data-placement="top" title="8-20 characters. Only letters and numbers">
                             </div>
                         </div>
                     </div>
@@ -190,7 +189,7 @@
                             <div class="form-group">
                                 <label for="password2">Repeat password:</label>
                                 <input type="text" class="form-control" id="password2" data-toggle="tooltip"
-                                    data-placement="top" title="Passwords do not match" value="1Q2w3e4r">
+                                    data-placement="top" title="Passwords do not match">
                             </div>
                         </div>
                     </div>
@@ -199,8 +198,7 @@
                             <div class="form-group">
                                 <label for="mac">MAC address:</label>
                                 <input type="text" class="form-control" id="mac" data-toggle="tooltip"
-                                    data-placement="top" title="MAC address should be in format: FF:FF:FF:FF:FF:FF"
-                                    value="2C:F4:32:0E:2F:D8">
+                                    data-placement="top" title="MAC address should be in format: FF:FF:FF:FF:FF:FF">
                             </div>
                         </div>
                     </div>
@@ -342,12 +340,13 @@
 
         var rEmail = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
         var rMac = /^[0-9a-f]{1,2}([\.:-])(?:[0-9a-f]{1,2}\1){4}[0-9a-f]{1,2}$/;
+        var rPw = /^[A-Za-z0-9]+$/;
         email = String(email).toLowerCase();
         if (!rEmail.test(email)) {
             $('#email').tooltip('show');
             return;
         }
-        if (pw1.length < 8 || pw1.length > 20) {
+        if (!rPw.test(pw1) || pw1.length < 8 || pw1.length > 20) {
             $('#password1').tooltip('show');
             return;
         }

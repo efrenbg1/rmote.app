@@ -1,4 +1,4 @@
-from libs import ddbb, mqtls
+from libs import ddbb
 from libs.email import registerShare
 from flask import request
 from libs.flask import socketio
@@ -95,7 +95,7 @@ def managerChangeShare(h):
         ddbb.query(
             "INSERT INTO share (owner, user, mac) VALUES ((SELECT id FROM user WHERE username=%s), %s, %s)", user, receiver, mac)
     for u in affected:
-        mqtls.acls(u[0])
+        ddbb.broker.macls(u[0])
     return {'done': True}
 
 
@@ -131,5 +131,5 @@ def managerRemove(h):
     ddbb.query(
         "DELETE FROM acls WHERE user=(SELECT id FROM user WHERE username=%s) AND mac=%s", user, mac)
     for u in affected:
-        mqtls.acls(u[0])
+        ddbb.broker.macls(u[0])
     return {'done': True}

@@ -1,4 +1,4 @@
-from libs import ddbb, password, limiter, mqtls
+from libs import ddbb, password, limiter
 from libs.flask import app
 from flask import request
 import string
@@ -26,7 +26,7 @@ def register():
     pw = base64.b64decode(pw).decode('utf-8')
     mac = base64.b64decode(mac).decode('utf-8').upper()
 
-    if len(pw) < 8 or len(pw) > 20:
+    if len(pw) < 8 or len(pw) > 20 or not pw.isalnum():
         return "400 (Bad request)", 400
 
     if not re.match("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$", user):
@@ -61,8 +61,10 @@ def register():
         ddbb.query(
             "UPDATE user SET confirm=%s, confirmType='register', confirmData=%s, confirmValid=now() WHERE username=%s", confirm, data, user)
     elif len(q2) > 0:
+        ddbb.query("DELETE FROM share WHERE user=%s", q2[0][0])
         ddbb.query(
             "UPDATE user SET username=%s, confirm=%s, confirmType='register', confirmData=%s, confirmValid=now() WHERE id=%s", user, confirm, data, q2[0][0])
+
     else:
         ddbb.query(
             "INSERT INTO user (username, pw, confirm, confirmType, confirmData, confirmValid) VALUES (%s, '', %s, 'register', %s, now())", user, confirm, data)
@@ -101,6 +103,6 @@ def registerConfirm():
     if q[0][0] == 'email':
         ddbb.query(
             "UPDATE user SET username=confirmData, confirm=NULL, confirmType=NULL, confirmData=NULL, confirmValid=NULL WHERE username=%s", user)
-        mqtls.user(user)
-        mqtls.acls(user)
+        ddbb.broker.muser(user)
+        ddbb.broker.macls(user)
     return "done"

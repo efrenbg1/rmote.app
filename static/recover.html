@@ -206,7 +206,7 @@
                             <div class="form-group">
                                 <label for="email">New password:</label>
                                 <input type="password" class="form-control" id="password1" data-toggle="tooltip"
-                                    data-placement="top" title="8-20 characters">
+                                    data-placement="top" title="8-20 characters. Only letters and numbers">
                             </div>
                             <div class="form-group">
                                 <label for="email">Repeat password:</label>
@@ -386,7 +386,10 @@
         $('#password2').tooltip('hide');
         var pw1 = document.getElementById('password1').value;
         var pw2 = document.getElementById('password2').value;
-        if (pw1.length < 8 || pw1.length > 20) {
+
+        var rPw = /^[A-Za-z0-9]+$/;
+
+        if (!rPw.test(pw1) || pw1.length < 8 || pw1.length > 20) {
             $('#password1').tooltip('show');
             return;
         }

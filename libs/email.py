@@ -13,7 +13,6 @@ def sender():
                     usr=email.user, pwd=email.pw, use_tls=True)
     while True:
         d = q.get()
-        print(d)
         with open("emails/" + d['template']) as f:
             html = Template(f.read())
         msg = Message(From="rmote.app", To=d['to'])

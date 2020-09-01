@@ -37,6 +37,22 @@ class Control {
     }
 
     action(mac, payload) {
+        if (payload == '1') {
+            tools.showModal('forceoff');
+            this.payload = payload;
+            this.mac = mac;
+            return;
+        }
+        if (payload == '8') {
+            tools.showModal('firmware');
+            this.payload = payload;
+            this.mac = mac;
+            return;
+        }
+        if (mac == undefined && payload == undefined) {
+            mac = this.mac;
+            payload = this.payload;
+        }
         tools.sreq('/control/action', function (status, response) {
             if (status === 200) {
                 tools.showSuccess('Command sent');
@@ -140,9 +156,51 @@ class controlTemplates {
 </div>`;
 
         this.grid = `<div class="row d-flex justify-content-around">
-        {}
-        </div>
-        `;
+	{}
+</div>
+
+<div class="modal" id="forceoff" tabindex="-1" role="dialog">
+	<div class="modal-dialog modal-dialog-centered" role="document">
+		<div class="modal-content">
+			<div class="modal-body">
+				<form>
+					<div class="mt-3 mb-5 text-center">
+						<h3>Are you sure?</h3>
+						<p>Forcing the PC to shutdown will cut the power, meaning all unsaved data will be lost.</p>
+					</div>
+					<div class="d-flex justify-content-between mb-2 mx-2">
+						<button type="button" class="btn btn-outline-success" data-dismiss="modal"><i data-feather="corner-down-left"></i>&nbsp;Return
+						</button>
+						<button type="button" class="btn btn-outline-danger" data-dismiss="modal" onclick="control.action()"><i
+								data-feather="x-octagon"></i>&nbsp;Force off</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<div class="modal" id="firmware" tabindex="-1" role="dialog">
+	<div class="modal-dialog modal-dialog-centered" role="document">
+		<div class="modal-content">
+			<div class="modal-body">
+				<form>
+					<div class="mt-3 mb-5 text-center">
+						<h3>Are you sure?</h3>
+						<p>The board needs an active Internet connection and uninterrupted power.<br><b>Remember</b> that you will need to reload this page after the update to dismiss the message.</p>
+					</div>
+					<div class="d-flex justify-content-between mb-2 mx-2">
+						<button type="button" class="btn btn-outline-success" data-dismiss="modal"><i data-feather="corner-down-left"></i>&nbsp;Return
+						</button>
+						<button type="button" class="btn btn-outline-danger" data-dismiss="modal" onclick="control.action()"><i
+								data-feather="download-cloud"></i>&nbsp;Update</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>`;
 
         this.card = `<div class="col-sm-4 pb-3">
 	<div class="card">

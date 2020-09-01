@@ -89,11 +89,13 @@ class Settings {
         var new1 = $('#passwordNew1')[0].value;
         var new2 = $('#passwordNew2')[0].value;
 
+        var rPw = /^[A-Za-z0-9]+$/;
+
         if (!old.length) {
             $('#passwordOld').tooltip('show');
             return;
         }
-        if (new1.length < 8 || new2.length > 20) {
+        if (new1.length < 8 || new2.length > 20 || !rPw.test(new1)) {
             $('#passwordNew1').tooltip('show');
             return;
         }
@@ -146,7 +148,7 @@ class Settings {
                 tools.hideModal('destroy');
                 tools.showSuccess('Changes saved');
                 tools.alert('This account has been deleted. <b>This session will be closed in 5 seconds.</b>', 'alert-triangle', 'info');
-                setTimeout(function(){
+                setTimeout(function () {
                     session.LogOut();
                 }, 5000);
             } else {
@@ -196,18 +198,18 @@ class settingsTemplates {
                     <div class="form-group">
                         <label>New email</label>
                         <input type="email" class="form-control" data-toggle="tooltip"
-                        data-placement="top" title="Input a valid email address" id="email1" value="efrens@boyarizo.es">
+                        data-placement="top" title="Input a valid email address" id="email1">
                         <small class="form-text text-muted">The email is only used to login</small>
                     </div>
                     <div class="form-group">
                         <label>Repeat new email</label>
                         <input type="email" class="form-control" autocomplete="nope" data-toggle="tooltip"
-                        data-placement="top" title="Emails do not match" id="email2" value="efrens@boyarizo.es">
+                        data-placement="top" title="Emails do not match" id="email2">
                     </div>
                     <div class="form-group">
                         <label>Confirm password</label>
                         <input type="password" class="form-control" autocomplete="new-password" data-toggle="tooltip"
-                        data-placement="top" title="Wrong password" id="emailPassword" value="1234">
+                        data-placement="top" title="Wrong password" id="emailPassword">
                     </div>
                 </form>
             </div>
@@ -239,7 +241,7 @@ class settingsTemplates {
                     <div class="form-group">
                         <label>New password</label>
                         <input type="password" class="form-control" autocomplete="new-password" data-toggle="tooltip"
-                        data-placement="top" title="8-20 characters" id="passwordNew1">
+                        data-placement="top" title="8-20 characters. Only letters and numbers" id="passwordNew1">
                     </div>
                     <div class="form-group">
                         <label>Repeat new password</label>
@@ -271,17 +273,17 @@ class settingsTemplates {
                     <div class="form-group">
                         <label>Current email</label>
                         <input type="email" class="form-control" autocomplete="nope" data-toggle="tooltip"
-                        data-placement="top" title="Input a valid email address" id="destroyEmail" value="efren@boyarizo.es">
+                        data-placement="top" title="Input a valid email address" id="destroyEmail">
                     </div>
                     <div class="form-group">
                         <label>Current password</label>
                         <input type="password" class="form-control" autocomplete="new-password" data-toggle="tooltip"
-                        data-placement="top" title="Wrong password / email" id="destroyPassword1" value="1Q2w3e4r">
+                        data-placement="top" title="Wrong password / email" id="destroyPassword1">
                     </div>
                     <div class="form-group">
                         <label>Repeat password</label>
                         <input type="password" class="form-control" autocomplete="new-password" data-toggle="tooltip"
-                        data-placement="top" title="Passwords do not match" id="destroyPassword2" value="1Q2w3e4r">
+                        data-placement="top" title="Passwords do not match" id="destroyPassword2">
                     </div>
                 </form>
             </div>

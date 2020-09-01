@@ -52,7 +52,7 @@ def recoverChange():
     user = base64.b64decode(user).decode('utf-8')
     pw = base64.b64decode(pw).decode('utf-8')
 
-    if len(pw) < 8 or len(pw) > 20:
+    if len(pw) < 8 or len(pw) > 20 or not pw.isalnum():
         return "400 (Bad request)", 400
 
     q = ddbb.query(

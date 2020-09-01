@@ -1,4 +1,4 @@
-from libs import ddbb, sessions, password, mqtls, email
+from libs import ddbb, password, email
 from libs.flask import socketio
 from flask import request
 import re
@@ -34,14 +34,14 @@ def settingsPassword(h):
     old = h.get('old')
     if new is None or old is None:
         return "400 (Bad request)", 400
-    if len(new) < 8 or len(new) > 20:
+    if len(new) < 8 or len(new) > 20 or not new.isalnum():
         return "400 (Bad request)", 400
     if not ddbb.checkPW(user, old):
         return "401 (Unauthorized)", 401
     ddbb.query("UPDATE user SET pw=%s WHERE username=%s",
                password.createHash(new), user)
-    mqtls.user(user)
-    mqtls.acls(user)
+    ddbb.broker.muser(user)
+    ddbb.broker.macls(user)
     return "done"
 
 
@@ -56,10 +56,12 @@ def settingsDestroy(h):
         return "401 (Unauthorized)", 401
     if not ddbb.checkPW(user, pw):
         return "401 (Unauthorized)", 401
-    
-    ddbb.query("DELETE FROM share WHERE owner=(SELECT id FROM user WHERE username=%s)", user)
-    ddbb.query("DELETE FROM acls WHERE user=(SELECT id FROM user WHERE username=%s)", user)
-    ddbb.query("DELETE FROM user WHERE username=%s)", user)
-    mqtls.user(user)
-    mqtls.acls(user)
+
+    ddbb.query(
+        "DELETE FROM share WHERE owner=(SELECT id FROM user WHERE username=%s) OR user=(SELECT id FROM user WHERE username=%s)", user, user)
+    ddbb.query(
+        "DELETE FROM acls WHERE user=(SELECT id FROM user WHERE username=%s)", user)
+    ddbb.query("DELETE FROM user WHERE username=%s", user)
+    ddbb.broker.muser(user)
+    ddbb.broker.macls(user)
     return "done"

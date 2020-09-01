@@ -1,7 +1,7 @@
 import pymysql as mysql
 from DBUtils.PooledDB import PooledDB
 from flask import request
-from libs import password
+from libs import password, mqtls
 from libs.flask import app
 import json
 
@@ -25,9 +25,11 @@ class SettingsEmail:
         self.url = url
 
 
-settings = SettingsDB("127.0.0.1", "root", "", "rmote", "127.0.0.1", "127.0.0.1")
+settings = SettingsDB("127.0.0.1", "root", "", "rmote",
+                      "127.0.0.1", "127.0.0.1")
 email = SettingsEmail("smtp.gmail.com", 25,
                       "name@domain.com", "password", "http://localhost")
+broker = None
 
 with open('settings.json', "r") as f:
     param = json.load(f)
@@ -36,6 +38,7 @@ with open('settings.json', "r") as f:
     settings.pw = param['mysql']['pw']
     settings.db = param['mysql']['db']
     settings.broker = param['broker']
+    broker = mqtls.mqtls(host=settings.broker)
     settings.proxy = param['proxy']
     email.host = param['email']['host']
     email.port = param['email']['port']

@@ -59,6 +59,7 @@ class Session {
             'Username': tools.getCookie('Username'),
             'Session': tools.getCookie('Session')
         });
+        tools.sClose();
         document.cookie = "Username=;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
         document.cookie = "Session=;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
         $('#account')[0].innerText = '';
@@ -66,7 +67,7 @@ class Session {
 
     enter(e) {
         if (e.keyCode === 13) {
-            this.LogIn();
+            session.LogIn();
         }
     }
 
