@@ -165,7 +165,7 @@ class managerTemplates {
             <div class="modal-body">
                 <button type="button" class="close mt-n2" data-dismiss="modal" aria-label="Close">×</button>
                 <div class="mt-3 text-center">
-                    <h5 class="modal-title mt-4">Insert e-mail address of receiver (blank to disable it):</h5>
+                    <h5 class="modal-title mt-4">Insert e-mail address of receiver&nbsp;(blank to disable it):</h5>
                     <div class="input-group mt-4">
                         <div class="input-group-prepend">
                             <span class="input-group-text"><i data-feather="mail"></i></span>

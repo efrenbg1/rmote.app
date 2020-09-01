@@ -74,7 +74,7 @@ class Session {
     conflict() {
         clearInterval(this.interval);
         tools.hideModal('logging');
-        tools.alert(`You've reached the maximum number of tries. Wait <b id="wait">30</b> seconds before retrying.`)
+        tools.alert('You have reached the maximum number of tries. Wait <b id="wait">30</b> seconds before retrying.');
         this.timeout = 30;
         this.interval = setInterval(function () {
             if (session.timeout < 1) {

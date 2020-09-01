@@ -7,7 +7,7 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from livereload import Server
 
-command = ["python3", "app.py", "-nominify"]
+command = ["python3", "app.py"]
 
 app = subprocess.Popen(command)
 

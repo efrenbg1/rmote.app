@@ -166,7 +166,7 @@ class controlTemplates {
 				<form>
 					<div class="mt-3 mb-5 text-center">
 						<h3>Are you sure?</h3>
-						<p>Forcing the PC to shutdown will cut the power, meaning all unsaved data will be lost.</p>
+						<p>Forcing the PC to shutdown will cut the power,&nbsp;meaning all unsaved data will be lost.</p>
 					</div>
 					<div class="d-flex justify-content-between mb-2 mx-2">
 						<button type="button" class="btn btn-outline-success" data-dismiss="modal"><i data-feather="corner-down-left"></i>&nbsp;Return
@@ -188,7 +188,7 @@ class controlTemplates {
 				<form>
 					<div class="mt-3 mb-5 text-center">
 						<h3>Are you sure?</h3>
-						<p>The board needs an active Internet connection and uninterrupted power.<br><b>Remember</b> that you will need to reload this page after the update to dismiss the message.</p>
+						<p>The board needs an active Internet connection and uninterrupted power.<br><b>Remember</b>&nbsp;that you will need to reload this page after the update to dismiss the message.</p>
 					</div>
 					<div class="d-flex justify-content-between mb-2 mx-2">
 						<button type="button" class="btn btn-outline-success" data-dismiss="modal"><i data-feather="corner-down-left"></i>&nbsp;Return
