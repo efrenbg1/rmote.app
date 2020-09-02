@@ -13,7 +13,10 @@ class Toolbox {
     sOpen() {
         if (this.opened) return;
         tools.req('/check', function (status, response) {
-            if (status != 200 || response != null) return;
+            if (status != 200 || response != null) {
+                this.sClose();
+                return;
+            }
             this.opened = true;
             this.socket = io();
             this.socket.on('connect', function () {
@@ -41,10 +44,7 @@ class Toolbox {
 
     sreq(event, callback, headers) {
         clearTimeout(this.uReqTimer);
-        if (!session.refresh()) {
-            this.sClose();
-            return;
-        }
+        if (!session.refresh()) return;
         this.timeoutLoading();
         if (this.socket == null || this.socket.disconnected) {
             this.callback.push(function () {
@@ -65,10 +65,10 @@ class Toolbox {
             this.sClose();
             return;
         }
-        if (this.socket == null || this.socket.disconnected) {
-            this.callback.push(function () {
+        if ((this.socket == null || this.socket.disconnected) && !this.opened) {
+            this.callback = [function () {
                 tools.sreq(event, callback, headers);
-            }.bind(this));
+            }.bind(this)];
             this.sOpen();
             return;
         }
